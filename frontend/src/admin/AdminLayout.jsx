@@ -21,7 +21,7 @@ export default function AdminLayout() {
         <Link to="/" className="flex items-center gap-3">
           <span className="text-3xl">🪔</span>
           <div>
-            <div className="font-display font-bold text-white text-lg tracking-wide">Divyam</div>
+            <div className="font-display font-bold text-white text-lg tracking-wide">Devapi</div>
             <div className="text-[10px] text-saffron-300 uppercase tracking-widest">Admin Panel</div>
           </div>
         </Link>

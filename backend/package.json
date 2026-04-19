@@ -1,7 +1,7 @@
 {
-  "name": "divyam-backend",
+  "name": "devapi-backend",
   "version": "1.0.0",
-  "description": "Backend for Divyam - Hindu Puja essentials e-commerce",
+  "description": "Backend for Devapi - Hindu Puja essentials e-commerce",
   "main": "server.js",
   "type": "module",
   "scripts": {

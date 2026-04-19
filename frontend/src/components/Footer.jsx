@@ -9,7 +9,7 @@ export default function Footer() {
           <div className="flex items-center gap-2 mb-4">
             <span className="text-3xl">🪔</span>
             <div>
-              <div className="font-display text-2xl font-bold text-white">Divyam</div>
+              <div className="font-display text-2xl font-bold text-white">Devapi</div>
               <div className="text-[10px] uppercase tracking-[0.2em] text-saffron-300">Sacred Essentials</div>
             </div>
           </div>
@@ -50,13 +50,13 @@ export default function Footer() {
           <ul className="space-y-3 text-sm text-saffron-200/80">
             <li className="flex items-start gap-2"><MapPin className="w-4 h-4 mt-0.5" /> Varanasi, Uttar Pradesh, India</li>
             <li className="flex items-center gap-2"><Phone className="w-4 h-4" /> +91 98765 43210</li>
-            <li className="flex items-center gap-2"><Mail className="w-4 h-4" /> care@divyam.com</li>
+            <li className="flex items-center gap-2"><Mail className="w-4 h-4" /> care@devapi.com</li>
           </ul>
         </div>
       </div>
       <div className="border-t border-white/10">
         <div className="container-x py-4 text-xs text-saffron-300/70 flex flex-col md:flex-row justify-between gap-2">
-          <span>© {new Date().getFullYear()} Divyam. Crafted with devotion 🙏</span>
+          <span>© {new Date().getFullYear()} Devapi. Crafted with devotion 🙏</span>
           <span className="font-devanagari">सर्वे भवन्तु सुखिनः • सर्वे सन्तु निरामयाः</span>
         </div>
       </div>

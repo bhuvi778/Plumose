@@ -25,7 +25,7 @@ const productSchema = new mongoose.Schema(
     material: { type: String, default: '' },
     weight: { type: String, default: '' },
     dimensions: { type: String, default: '' },
-    brand: { type: String, default: 'Divyam' },
+    brand: { type: String, default: 'Devapi' },
     tags: [{ type: String }],
     featured: { type: Boolean, default: false },
     trending: { type: Boolean, default: false },

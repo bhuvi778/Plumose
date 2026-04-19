@@ -5,7 +5,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('divyam_token');
+  const token = localStorage.getItem('devapi_token');
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });

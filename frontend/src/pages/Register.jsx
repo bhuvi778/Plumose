@@ -14,7 +14,7 @@ export default function Register() {
     setLoading(true);
     try {
       await register(form);
-      toast.success('Welcome to Divyam 🪔');
+      toast.success('Welcome to Devapi 🪔');
       navigate('/');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Registration failed');
@@ -27,7 +27,7 @@ export default function Register() {
         <div className="text-center mb-6">
           <div className="text-5xl mb-2">🕉️</div>
           <h1 className="font-display text-3xl font-bold text-maroon-900">Create your account</h1>
-          <p className="text-maroon-600 text-sm mt-1">Begin your journey with Divyam</p>
+          <p className="text-maroon-600 text-sm mt-1">Begin your journey with Devapi</p>
         </div>
         <form onSubmit={submit} className="space-y-4">
           <div><label className="label">Full name</label>

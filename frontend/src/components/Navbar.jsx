@@ -41,7 +41,7 @@ export default function Navbar() {
         <Link to="/" className="flex items-center gap-2 shrink-0">
           <span className="text-3xl">🪔</span>
           <div className="leading-tight">
-            <div className="font-display text-2xl font-bold text-maroon-900">Divyam</div>
+            <div className="font-display text-2xl font-bold text-maroon-900">Devapi</div>
             <div className="text-[10px] uppercase tracking-[0.2em] text-saffron-700">Sacred Essentials</div>
           </div>
         </Link>

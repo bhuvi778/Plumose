@@ -54,7 +54,7 @@ export default function Dashboard() {
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
             <h2 className="font-display text-3xl font-bold">Welcome back 🙏</h2>
-            <p className="text-saffron-200/80 mt-1">Here's your Divyam store overview for today.</p>
+            <p className="text-saffron-200/80 mt-1">Here's your Devapi store overview for today.</p>
           </div>
           <div className="text-4xl opacity-30 font-devanagari">ॐ</div>
         </div>

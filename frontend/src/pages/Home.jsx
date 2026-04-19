@@ -253,11 +253,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ════════════════ WHY CHOOSE DIVYAM ════════════════ */}
+      {/* ════════════════ WHY CHOOSE DEVAPI ════════════════ */}
       <section className="container-x py-16">
         <div className="text-center mb-12">
           <div className="text-saffron-700 text-sm font-devanagari mb-1">॥ विश्वास ॥</div>
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-maroon-900">Why Choose Divyam?</h2>
+          <h2 className="font-display text-3xl md:text-4xl font-bold text-maroon-900">Why Choose Devapi?</h2>
           <p className="mt-3 text-maroon-700/70 max-w-2xl mx-auto">
             We are not just a store — we are a dedication to the sacred traditions of Bharat and the artisans who keep them alive.
           </p>
@@ -347,7 +347,7 @@ export default function Home() {
               { n: 'Amit Kulkarni', c: 'Pune', r: 5, p: 'Complete Brass Thali Set', t: 'Ordered the complete thali set for Ganesh Chaturthi. It arrived well-packaged in just 2 days. The quality is genuinely temple-grade — each item is crafted to perfection. Very satisfied!' },
               { n: 'Priya Iyer', c: 'Bengaluru', r: 5, p: '5 Mukhi Rudraksha Mala', t: 'The rudraksha mala feels genuinely energised. I notice positive vibrations during every japa session. The beads are authentic, well-knotted, and the thread is sturdy. Highly recommended!' },
               { n: 'Vikram Singh', c: 'Jaipur', r: 5, p: 'Shree Yantra – Copper', t: 'The Shree Yantra came with precise geometric lines and a proper puja vidhi booklet. It was clearly energised — you can sense the vibration. My home\'s energy has visibly shifted.' },
-              { n: 'Meena Trivedi', c: 'Varanasi', r: 5, p: 'Marble Lakshmi Murti', t: 'Coming from Varanasi, I have seen thousands of idols. The marble Lakshmi from Divyam matches the finest work on Vishwanath Gali. Pure white marble, smooth finish and flawless carving.' },
+              { n: 'Meena Trivedi', c: 'Varanasi', r: 5, p: 'Marble Lakshmi Murti', t: 'Coming from Varanasi, I have seen thousands of idols. The marble Lakshmi from Devapi matches the finest work on Vishwanath Gali. Pure white marble, smooth finish and flawless carving.' },
               { n: 'Rohit Gupta', c: 'Mumbai', r: 4, p: 'Copper Havan Kund', t: 'Perfect havan kund for our weekly Satyanarayan katha. The right size for home use, solid copper construction and the quality is excellent. Delivery was prompt and packaging was protective.' },
             ].map(({ n, c, r, p, t }) => (
               <div key={n} className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6 flex flex-col">

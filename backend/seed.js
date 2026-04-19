@@ -133,7 +133,7 @@ async function run() {
   const adminEmail = process.env.ADMIN_EMAIL || 'admin@divyam.com';
   const adminPassword = process.env.ADMIN_PASSWORD || 'admin@123';
   const admin = await User.create({
-    name: 'Divyam Admin',
+    name: 'Devapi Admin',
     email: adminEmail,
     password: adminPassword,
     role: 'admin',

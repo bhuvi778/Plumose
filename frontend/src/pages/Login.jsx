@@ -42,7 +42,7 @@ export default function Login() {
           New here? <Link to="/register" className="link font-semibold">Create an account</Link>
         </p>
         <div className="mt-5 p-3 rounded-xl bg-saffron-50 text-xs text-maroon-700">
-          <strong>Demo admin:</strong> admin@divyam.com / admin@123
+          <strong>Demo admin:</strong> admin@devapi.com / admin@123
         </div>
       </div>
     </div>

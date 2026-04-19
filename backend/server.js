@@ -37,7 +37,7 @@ app.use(async (req, res, next) => {
   }
 });
 
-app.get('/api/health', (_req, res) => res.json({ ok: true, service: 'Divyam API' }));
+app.get('/api/health', (_req, res) => res.json({ ok: true, service: 'Devapi API' }));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
@@ -57,6 +57,6 @@ export default app;
 if (process.env.VERCEL !== '1') {
   const PORT = process.env.PORT || 5000;
   connectDB()
-    .then(() => app.listen(PORT, () => console.log(`🪔 Divyam API running on port ${PORT}`)))
+    .then(() => app.listen(PORT, () => console.log(`🪔 Devapi API running on port ${PORT}`)))
     .catch((err) => { console.error('Failed to start:', err.message); process.exit(1); });
 }
