@@ -14,13 +14,28 @@ import adminRoutes from './routes/adminRoutes.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 
 dotenv.config();
-await connectDB();
 
 const app = express();
 
-app.use(cors({ origin: process.env.CLIENT_ORIGIN || '*', credentials: true }));
+// Fix: origin:'*' with credentials:true is rejected by browsers.
+// Using origin:true reflects the request Origin, which works with credentials.
+app.use(cors({
+  origin: process.env.CLIENT_ORIGIN || true,
+  credentials: true,
+}));
 app.use(express.json({ limit: '10mb' }));
 app.use(morgan('dev'));
+
+// Connect DB per-request (connection is cached by connectDB itself).
+// Avoids top-level await which crashes the serverless function on init failure.
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch {
+    res.status(503).json({ message: 'Database unavailable' });
+  }
+});
 
 app.get('/api/health', (_req, res) => res.json({ ok: true, service: 'Divyam API' }));
 
@@ -41,5 +56,7 @@ export default app;
 // Only start HTTP server when running locally (not on Vercel serverless)
 if (process.env.VERCEL !== '1') {
   const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => console.log(`🪔 Divyam API running on port ${PORT}`));
+  connectDB()
+    .then(() => app.listen(PORT, () => console.log(`🪔 Divyam API running on port ${PORT}`)))
+    .catch((err) => { console.error('Failed to start:', err.message); process.exit(1); });
 }
