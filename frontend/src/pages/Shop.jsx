@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import api from '../api/client.js';
 import ProductCard from '../components/ProductCard.jsx';
-import SectionTitle from '../components/SectionTitle.jsx';
 import Loader from '../components/Loader.jsx';
 import { SlidersHorizontal, X } from 'lucide-react';
 
@@ -41,82 +40,139 @@ export default function Shop() {
   const activeCat = categories.find((c) => c.slug === category);
 
   return (
-    <div className="container-x py-10">
-      <div className="mb-8">
-        <nav className="text-xs text-maroon-600 mb-3">
-          <Link to="/" className="hover:text-saffron-700">Home</Link> / <Link to="/shop" className="hover:text-saffron-700">Shop</Link>
-          {activeCat && <> / <span className="text-maroon-900 font-medium">{activeCat.name}</span></>}
-          {search && <> / <span className="text-maroon-900 font-medium">"{search}"</span></>}
+    <div className="container-x py-20">
+      {/* Page header */}
+      <div className="mb-10 border-b border-ink/20 pb-8">
+        <nav className="text-[10px] uppercase tracking-[0.2em] text-ink/40 font-mono mb-4">
+          <Link to="/" className="hover:text-ink link-strike">Home</Link>
+          {' / '}
+          <Link to="/shop" className="hover:text-ink link-strike">Shop</Link>
+          {activeCat && <> / <span className="text-ink">{activeCat.name}</span></>}
+          {search && <> / <span className="text-ink">&ldquo;{search}&rdquo;</span></>}
         </nav>
-        <h1 className="font-display text-4xl md:text-5xl font-bold text-maroon-900">
-          {search ? `Results for "${search}"` : activeCat ? activeCat.name : 'Shop all essentials'}
+        <h1
+          className="text-5xl md:text-7xl text-ink leading-[0.85] tracking-tighter"
+          style={{ fontFamily: 'Anton, Impact, sans-serif', textTransform: 'uppercase' }}
+        >
+          {search ? `"${search}"` : activeCat ? activeCat.name : 'All Products'}
         </h1>
-        {activeCat?.description && <p className="mt-2 text-maroon-700/80">{activeCat.description}</p>}
+        {activeCat?.description && (
+          <p className="mt-3 text-sm text-ink/50 max-w-md font-body leading-relaxed">{activeCat.description}</p>
+        )}
       </div>
 
-      <div className="grid lg:grid-cols-[260px_1fr] gap-8">
-        {/* Sidebar filter */}
-        <aside className={`${showFilter ? 'fixed inset-0 z-50 bg-cream/95 backdrop-blur p-6 overflow-auto' : 'hidden'} lg:block lg:static lg:p-0`}>
-          <div className="flex items-center justify-between mb-4 lg:hidden">
-            <h3 className="font-display text-xl font-bold">Filters</h3>
-            <button onClick={() => setShowFilter(false)}><X /></button>
+      <div className="grid lg:grid-cols-[220px_1fr] gap-10">
+        {/* â”€â”€ Sidebar filter â”€â”€ */}
+        <aside className={`${showFilter ? 'fixed inset-0 z-50 bg-concrete overflow-auto p-8' : 'hidden'} lg:block lg:static lg:p-0`}>
+          <div className="flex items-center justify-between mb-6 lg:hidden">
+            <h3 className="text-2xl text-ink" style={{ fontFamily: 'Anton, Impact, sans-serif', textTransform: 'uppercase' }}>Filters</h3>
+            <button onClick={() => setShowFilter(false)} className="text-ink"><X className="w-5 h-5" /></button>
           </div>
-          <div className="card p-5 space-y-6 sticky top-28">
+
+          <div className="border border-ink p-5 space-y-8 lg:sticky lg:top-24">
+            {/* Categories */}
             <div>
-              <h4 className="label">Categories</h4>
-              <div className="space-y-1 max-h-72 overflow-auto pr-2">
-                <button onClick={() => setCategory('')}
-                  className={`block w-full text-left px-3 py-1.5 rounded-lg text-sm ${!category ? 'bg-saffron-100 text-maroon-900 font-medium' : 'text-maroon-700 hover:bg-saffron-50'}`}>
-                  All categories
+              <div className="text-[10px] uppercase tracking-[0.25em] text-ink/40 font-mono mb-3">Category</div>
+              <div className="space-y-1 max-h-64 overflow-auto">
+                <button
+                  onClick={() => setCategory('')}
+                  className={`block w-full text-left px-2 py-1.5 text-xs uppercase tracking-wide font-medium transition-colors ${
+                    !category ? 'bg-ink text-concrete' : 'text-ink hover:bg-ink/5'
+                  }`}
+                >
+                  All
                 </button>
                 {categories.map((c) => (
-                  <button key={c._id} onClick={() => setCategory(c.slug)}
-                    className={`flex w-full justify-between items-center px-3 py-1.5 rounded-lg text-sm ${category === c.slug ? 'bg-saffron-100 text-maroon-900 font-medium' : 'text-maroon-700 hover:bg-saffron-50'}`}>
-                    <span>{c.icon} {c.name}</span>
-                    <span className="text-xs text-maroon-400">{c.productCount}</span>
+                  <button
+                    key={c._id}
+                    onClick={() => setCategory(c.slug)}
+                    className={`flex w-full justify-between items-center px-2 py-1.5 text-xs uppercase tracking-wide transition-colors ${
+                      category === c.slug ? 'bg-ink text-concrete' : 'text-ink hover:bg-ink/5'
+                    }`}
+                  >
+                    <span>{c.name}</span>
+                    <span className="text-[10px] font-mono opacity-50">{c.productCount}</span>
                   </button>
                 ))}
               </div>
             </div>
 
+            {/* Price */}
             <div>
-              <h4 className="label">Price range</h4>
+              <div className="text-[10px] uppercase tracking-[0.25em] text-ink/40 font-mono mb-3">Price</div>
               <div className="flex items-center gap-2">
-                <input type="number" value={priceRange[0]} onChange={(e) => setPriceRange([+e.target.value, priceRange[1]])} className="input" placeholder="Min" />
-                <span className="text-maroon-500">–</span>
-                <input type="number" value={priceRange[1]} onChange={(e) => setPriceRange([priceRange[0], +e.target.value])} className="input" placeholder="Max" />
+                <input
+                  type="number"
+                  value={priceRange[0]}
+                  onChange={(e) => setPriceRange([+e.target.value, priceRange[1]])}
+                  className="input-brutal text-xs"
+                  placeholder="Min"
+                />
+                <span className="text-ink/30">â€”</span>
+                <input
+                  type="number"
+                  value={priceRange[1]}
+                  onChange={(e) => setPriceRange([priceRange[0], +e.target.value])}
+                  className="input-brutal text-xs"
+                  placeholder="Max"
+                />
               </div>
-              <input type="range" min={0} max={5000} step={100} value={priceRange[1]}
+              <input
+                type="range" min={0} max={5000} step={100}
+                value={priceRange[1]}
                 onChange={(e) => setPriceRange([priceRange[0], +e.target.value])}
-                className="w-full mt-3 accent-saffron-500" />
+                className="w-full mt-3 accent-ink"
+              />
             </div>
 
-            <button onClick={() => { setCategory(''); setPriceRange([0, 5000]); setSort('newest'); setSearchParams({}); }}
-              className="btn-outline w-full text-sm">Reset filters</button>
+            <button
+              onClick={() => { setCategory(''); setPriceRange([0, 5000]); setSort('newest'); setSearchParams({}); }}
+              className="btn-brutal-outline w-full justify-center text-[10px]"
+            >
+              Reset Filters
+            </button>
           </div>
         </aside>
 
+        {/* â”€â”€ Product grid â”€â”€ */}
         <div>
-          <div className="flex items-center justify-between mb-5">
-            <button onClick={() => setShowFilter(true)} className="btn-outline lg:hidden text-sm">
-              <SlidersHorizontal className="w-4 h-4" /> Filters
+          <div className="flex items-center justify-between mb-6">
+            <button onClick={() => setShowFilter(true)} className="btn-brutal-outline lg:hidden text-[10px] py-2">
+              <SlidersHorizontal className="w-3.5 h-3.5" /> Filters
             </button>
-            <span className="text-sm text-maroon-700">{products.length} products</span>
-            <select value={sort} onChange={(e) => setSort(e.target.value)}
-              className="input max-w-[200px] bg-white text-sm">
+            <span className="text-[10px] uppercase tracking-[0.2em] text-ink/40 font-mono">
+              {products.length} items
+            </span>
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+              className="input-brutal text-xs max-w-[180px]"
+            >
               <option value="newest">Newest</option>
-              <option value="price-asc">Price: Low to High</option>
-              <option value="price-desc">Price: High to Low</option>
-              <option value="rating">Top rated</option>
-              <option value="popular">Most popular</option>
+              <option value="price-asc">Price: Low â†’ High</option>
+              <option value="price-desc">Price: High â†’ Low</option>
+              <option value="rating">Top Rated</option>
+              <option value="popular">Most Popular</option>
             </select>
           </div>
 
-          {loading ? <Loader /> : products.length === 0 ? (
-            <div className="card p-12 text-center">
-              <div className="text-6xl mb-4">🪔</div>
-              <h3 className="font-display text-2xl font-bold text-maroon-900">No products found</h3>
-              <p className="text-maroon-600 mt-2">Try adjusting your filters or search.</p>
+          {loading ? (
+            <Loader />
+          ) : products.length === 0 ? (
+            <div className="border border-ink/20 p-16 text-center">
+              <div
+                className="text-6xl text-ink/10 mb-4"
+                style={{ fontFamily: 'Anton, Impact, sans-serif' }}
+              >
+                0
+              </div>
+              <h3
+                className="text-2xl text-ink mb-2"
+                style={{ fontFamily: 'Anton, Impact, sans-serif', textTransform: 'uppercase' }}
+              >
+                No Products Found
+              </h3>
+              <p className="text-xs text-ink/40 font-mono uppercase tracking-wide">Adjust your filters or search.</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">

@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import api from '../api/client.js';
-import { CheckCircle2 } from 'lucide-react';
 import Loader from '../components/Loader.jsx';
 
 export default function OrderSuccess() {
@@ -11,22 +10,30 @@ export default function OrderSuccess() {
   if (!order) return <Loader />;
 
   return (
-    <div className="container-x py-16 max-w-2xl text-center">
-      <CheckCircle2 className="w-20 h-20 mx-auto text-green-600" />
-      <h1 className="font-display text-4xl font-bold mt-4 text-maroon-900">Thank you for your order!</h1>
-      <p className="font-devanagari text-xl text-saffron-700 mt-2">॥ शुभमस्तु ॥</p>
-      <p className="mt-4 text-maroon-700">Your order <strong>#{order._id.slice(-8).toUpperCase()}</strong> has been placed and will be delivered soon.</p>
-      <div className="card p-6 mt-8 text-left">
-        <div className="flex justify-between text-sm"><span>Items total</span><span>₹{order.itemsTotal}</span></div>
-        <div className="flex justify-between text-sm mt-1"><span>Shipping</span><span>₹{order.shippingFee}</span></div>
-        <div className="flex justify-between text-sm mt-1"><span>Tax</span><span>₹{order.tax}</span></div>
-        <div className="flex justify-between font-bold mt-3 pt-3 border-t border-saffron-200 text-maroon-900">
-          <span>Total paid</span><span>₹{order.total}</span>
+    <div className="container-x py-24 max-w-xl">
+      <div className="text-[10px] uppercase tracking-[0.3em] text-ink/40 font-mono mb-4">Order Confirmed</div>
+      <h1
+        className="text-6xl text-ink leading-[0.85] tracking-tighter mb-6"
+        style={{ fontFamily: 'Anton, Impact, sans-serif', textTransform: 'uppercase' }}
+      >
+        Thank You
+      </h1>
+      <p className="text-sm text-ink/60 font-body leading-relaxed mb-8">
+        Your order <strong className="text-ink font-mono">#{order._id.slice(-8).toUpperCase()}</strong> is confirmed and will be dispatched shortly.
+      </p>
+
+      <div className="border border-ink p-6 space-y-3 font-mono text-xs mb-8">
+        <div className="flex justify-between"><span className="text-ink/40 uppercase tracking-wide">Items</span><span>${order.itemsTotal}</span></div>
+        <div className="flex justify-between"><span className="text-ink/40 uppercase tracking-wide">Shipping</span><span>${order.shippingFee}</span></div>
+        <div className="flex justify-between"><span className="text-ink/40 uppercase tracking-wide">Tax</span><span>${order.tax}</span></div>
+        <div className="flex justify-between font-bold text-sm border-t border-ink/20 pt-3">
+          <span>Total Paid</span><span>${order.total}</span>
         </div>
       </div>
-      <div className="mt-6 flex gap-3 justify-center">
-        <Link to="/orders" className="btn-primary">View my orders</Link>
-        <Link to="/shop" className="btn-outline">Continue shopping</Link>
+
+      <div className="flex gap-3">
+        <Link to="/orders" className="btn-brutal">View Orders</Link>
+        <Link to="/shop" className="btn-brutal-outline">Continue Shopping</Link>
       </div>
     </div>
   );

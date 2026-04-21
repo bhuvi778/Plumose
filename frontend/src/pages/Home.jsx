@@ -1,251 +1,271 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ArrowRight, ShieldCheck, Truck, Sparkles, HeartHandshake, Star, ChevronRight, Quote, Flame, BookOpen, Leaf } from 'lucide-react';
+import { ArrowRight, ChevronRight } from 'lucide-react';
 import api from '../api/client.js';
-import ProductCard from '../components/ProductCard.jsx';
 import Loader from '../components/Loader.jsx';
+import ProductCard from '../components/ProductCard.jsx';
 
-/* Gradient per category slug – full class strings for Tailwind JIT */
-const CAT_GRAD = {
-  'idols-murtis': 'from-orange-500 to-amber-600',
-  'diyas-lamps': 'from-yellow-400 to-orange-500',
-  'incense-dhoop': 'from-green-600 to-emerald-700',
-  'puja-thali': 'from-amber-400 to-yellow-600',
-  'bells-ghanti': 'from-yellow-500 to-amber-700',
-  'kalash-lota': 'from-orange-400 to-red-500',
-  'chunri-vastra': 'from-red-500 to-pink-600',
-  'rudraksha-malas': 'from-amber-700 to-stone-700',
-  'yantras': 'from-red-700 to-rose-800',
-  'havan-samagri': 'from-orange-600 to-red-600',
-  'oils-ghee': 'from-yellow-400 to-amber-600',
-  'kumkum-chandan': 'from-red-600 to-rose-700',
-  'flowers-garlands': 'from-pink-400 to-rose-500',
-  'chowki-asan': 'from-amber-800 to-stone-800',
-  'books-aartis': 'from-saffron-600 to-maroon-700',
-  'shankh': 'from-sky-400 to-cyan-600',
-};
+/* â”€â”€ static editorial content â”€â”€ */
+const ARCH_ITEMS = [
+  { label: '500GSM', desc: 'Heavyweight French terry composition. Triple-washed. Garment dyed in single-lot batches to ensure colour consistency throughout the run.' },
+  { label: 'SEAM SPEC', desc: 'Felled seams on outseam and inseam for structural integrity. 401 chainstitch on body construction. 504 overlock at panel junctions.' },
+  { label: 'DROP PATTERN', desc: 'Low-slung seat geometry with 6cm drop crotch. Extended hem at rear for coverage architecturally balanced by a cropped front panel.' },
+  { label: 'HARDWARE', desc: 'Custom moulded YKK NATULONÂ® zippers with hand-lacquered pulls. All external hardware in raw brass â€” no plating, deliberate patina.' },
+];
+
+const TESTIMONIALS = [
+  { handle: '@kade.berlin', quote: 'The weight of the fabric is insane. Nothing else in my wardrobe feels like this. It\'s structural.', rotate: 'rotate-1', variant: 'fill' },
+  { handle: '@studio_grim', quote: 'Wore the black utility trousers for an entire month straight. The dye didn\'t fade, the seams didn\'t budge.', rotate: '-rotate-1', variant: 'outline' },
+  { handle: '@archi.wear', quote: 'Plumose is what happens when someone who builds things decides to make clothes.', rotate: 'rotate-2', variant: 'fill' },
+  { handle: '@north.dressed', quote: 'Every piece is a considered object. I don\'t say that lightly.', rotate: '-rotate-2', variant: 'outline' },
+  { handle: '@jvn.studio', quote: 'Ordered twice. Zero quality issues. Deadstock fabric on the second drop is something else entirely.', rotate: 'rotate-1', variant: 'fill' },
+  { handle: '@rawform_co', quote: 'The care instructions say machine wash but I\'ll never trust a machine with this thing.', rotate: '-rotate-1', variant: 'outline' },
+];
+
+const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
 export default function Home() {
-  const [categories, setCategories] = useState([]);
+  const [products, setProducts] = useState([]);
   const [featured, setFeatured] = useState([]);
-  const [bestsellers, setBestsellers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [email, setEmail] = useState('');
+  const scrollRef = useRef(null);
 
   useEffect(() => {
     Promise.all([
-      api.get('/categories'),
       api.get('/products?featured=true&limit=8'),
-      api.get('/products?bestseller=true&limit=8'),
-    ]).then(([c, f, b]) => {
-      setCategories(c.data);
+      api.get('/products?limit=9'),
+    ]).then(([f, p]) => {
       setFeatured(f.data.products || []);
-      setBestsellers(b.data.products || []);
+      setProducts(p.data.products || []);
     }).finally(() => setLoading(false));
   }, []);
 
   if (loading) return <Loader />;
 
+  /* helper: deterministic fake out-of-stock sizes per product  */
+  const oos = (id) => SIZES.filter((_, i) => (id.charCodeAt(id.length - 1) + i) % 4 === 0);
+
   return (
-    <div className="overflow-x-hidden">
+    <div className="overflow-x-hidden bg-concrete">
 
-      {/* ════════════════ HERO ════════════════ */}
-      <section className="relative min-h-[92vh] flex items-center bg-gradient-to-br from-maroon-900 via-maroon-800 to-maroon-700 overflow-hidden">
-        {/* Background glows */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-saffron-600/10 rounded-full blur-3xl -translate-y-1/3 translate-x-1/4 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-maroon-500/20 rounded-full blur-3xl pointer-events-none" />
-        {/* Om watermark */}
-        <div className="absolute inset-0 flex items-center justify-end pr-20 pointer-events-none select-none">
-          <span className="font-devanagari text-[28rem] text-white/[0.04] leading-none">ॐ</span>
-        </div>
-
-        <div className="container-x relative z-10 py-20 grid md:grid-cols-2 gap-12 items-center">
-          {/* Left: text */}
-          <motion.div initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }}>
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur border border-white/20 rounded-full px-4 py-2 text-saffron-200 text-sm mb-6">
-              <span className="w-2 h-2 rounded-full bg-green-400 inline-block animate-pulse" />
-              Free delivery on orders above ₹999
-            </div>
-            <h1 className="font-display text-5xl md:text-6xl xl:text-7xl font-bold text-white leading-[1.1]">
-              Bring <span className="text-saffron-400">Divinity</span><br />Into Your Home
-            </h1>
-            <p className="mt-6 text-lg text-saffron-100/80 max-w-lg leading-relaxed">
-              Handcrafted brass idols, pure copper kalash, 108-bead rudraksha malas, authentic havan samagri — everything your mandir deserves, blessed & delivered with devotion.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Link to="/shop" className="btn bg-saffron-500 hover:bg-saffron-400 text-white font-semibold shadow-lg shadow-black/20 flex items-center gap-2">
-                Shop Now <ArrowRight className="w-4 h-4" />
-              </Link>
-              <Link to="/categories" className="btn border-2 border-white/30 text-white hover:bg-white/10 font-medium">
-                Browse Categories
-              </Link>
-            </div>
-            <div className="mt-12 grid grid-cols-3 gap-4 max-w-sm">
-              {[{ n: '16+', l: 'Categories' }, { n: '60+', l: 'Products' }, { n: '10k+', l: 'Devotees' }].map(s => (
-                <div key={s.l} className="text-center border-r border-white/10 last:border-0 pr-4 last:pr-0">
-                  <div className="font-display text-4xl font-bold text-saffron-400">{s.n}</div>
-                  <div className="text-xs text-saffron-200/60 mt-1 uppercase tracking-wider">{s.l}</div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Right: floating puja icons visual */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.75 }} animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, ease: 'easeOut' }}
-            className="relative flex justify-center items-center"
+      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+          Â§ 1 â€” ASYMMETRIC HERO
+      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+      <section className="relative min-h-screen bg-concrete overflow-hidden">
+        {/* Right image â€” absolute, 65% width, off-screen crop */}
+        <div className="absolute top-0 right-0 w-[65%] h-full overflow-hidden">
+          <img
+            src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80"
+            alt="Collection 004"
+            className="w-full h-full object-cover object-left img-cinematic"
+          />
+          {/* Dim overlay */}
+          <div className="absolute inset-0 bg-concrete/10 pointer-events-none" />
+          {/* Vertical section label */}
+          <div
+            className="absolute bottom-20 -left-2 pointer-events-none select-none"
+            style={{ transform: 'rotate(-90deg)', transformOrigin: 'bottom left' }}
           >
-            <div className="relative w-72 h-72 md:w-80 md:h-80">
-              {/* Core glow */}
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-saffron-500/15 to-maroon-600/25 backdrop-blur-sm border border-white/10 flex items-center justify-center flex-col gap-2">
-                <span className="text-7xl animate-float">🪔</span>
-                <span className="font-devanagari text-white text-3xl">दिव्यम्</span>
-                <span className="text-saffron-300 text-sm">Sacred Essentials</span>
-              </div>
-              {/* Orbit rings */}
-              <div className="absolute inset-[-20px] rounded-full border border-white/5" />
-              <div className="absolute inset-[-50px] rounded-full border border-white/[0.03]" />
-              {/* Orbiting items */}
-              {[
-                { e: '🕉️', deg: 0 }, { e: '📿', deg: 60 }, { e: '🏺', deg: 120 },
-                { e: '🔔', deg: 180 }, { e: '🌸', deg: 240 }, { e: '🐚', deg: 300 },
-              ].map(({ e, deg }) => (
-                <div
-                  key={deg}
-                  className="absolute top-1/2 left-1/2 w-12 h-12 bg-white/10 backdrop-blur border border-white/20 rounded-full flex items-center justify-center text-2xl"
-                  style={{ transform: `translate(-50%,-50%) rotate(${deg}deg) translateY(-150px) rotate(-${deg}deg)` }}
-                >
-                  {e}
+            <span className="text-[10px] uppercase tracking-[0.4em] text-white/50 font-mono whitespace-nowrap">
+              Collection 004 â€” SS 2025
+            </span>
+          </div>
+          {/* Tech label on image */}
+          <div className="tech-label top-8 left-8">500gsm</div>
+        </div>
+
+        {/* Left text â€” 42% width, low-positioned */}
+        <div className="relative z-10 flex flex-col justify-end min-h-screen pb-20 pl-8 lg:pl-14 pr-6">
+          <div className="max-w-[42%]">
+            {/* Live indicator */}
+            <div className="flex items-center gap-2 mb-8">
+              <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+              <span className="text-[10px] uppercase tracking-[0.3em] text-ink/60 font-mono">
+                Drop 004 â€” Live Now
+              </span>
+            </div>
+
+            <h1
+              className="text-[clamp(4.5rem,9vw,11rem)] text-ink leading-[0.85] tracking-tighter"
+              style={{ fontFamily: 'Anton, Impact, sans-serif', textTransform: 'uppercase' }}
+            >
+              RAW<br />FORM
+            </h1>
+
+            <p className="mt-8 text-sm text-ink/60 font-body tracking-wide leading-relaxed"
+               style={{ maxWidth: '320px' }}>
+              Heavy garments. Considered construction. Zero compromise. Technical streetwear built for the architectural generation â€” not the algorithmic one.
+            </p>
+
+            <Link
+              to="/shop"
+              className="mt-10 inline-flex items-center gap-3 text-xs uppercase tracking-[0.25em] font-bold text-ink border-b-2 border-ink pb-1 link-strike"
+            >
+              Shop Collection 004 <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+
+            {/* Stats row */}
+            <div className="mt-16 flex items-start gap-8 border-t border-ink/20 pt-6">
+              {[['004', 'Drop Number'], ['60+', 'SKUs Live'], ['500GSM', 'Base Weight']].map(([n, l]) => (
+                <div key={l}>
+                  <div
+                    className="text-3xl text-ink leading-none"
+                    style={{ fontFamily: 'Anton, Impact, sans-serif' }}
+                  >
+                    {n}
+                  </div>
+                  <div className="text-[10px] uppercase tracking-widest text-ink/40 mt-1 font-mono">{l}</div>
                 </div>
               ))}
             </div>
-          </motion.div>
-        </div>
-
-        {/* Wave separator */}
-        <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
-          <svg viewBox="0 0 1440 80" className="w-full fill-cream">
-            <path d="M0,40 C360,80 1080,0 1440,40 L1440,80 L0,80 Z" />
-          </svg>
-        </div>
-      </section>
-
-      {/* ════════════════ TRUST STRIP ════════════════ */}
-      <section className="bg-cream border-b border-saffron-100">
-        <div className="container-x py-5 grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { icon: Truck, t: 'Free Delivery', s: 'All orders above ₹999' },
-            { icon: ShieldCheck, t: 'Pran-Pratishtha', s: 'Every idol ritually blessed' },
-            { icon: Sparkles, t: 'Artisan Crafted', s: 'Made by Indian craftsmen' },
-            { icon: HeartHandshake, t: '7-Day Returns', s: 'Hassle-free policy' },
-          ].map(({ icon: Icon, t, s }) => (
-            <div key={t} className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-saffron-100 flex items-center justify-center shrink-0">
-                <Icon className="w-5 h-5 text-saffron-700" />
-              </div>
-              <div>
-                <div className="font-semibold text-sm text-maroon-900">{t}</div>
-                <div className="text-xs text-maroon-600">{s}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ════════════════ CATEGORIES ════════════════ */}
-      <section className="container-x py-16">
-        <div className="flex items-end justify-between mb-8">
-          <div>
-            <div className="text-saffron-700 text-sm font-devanagari font-medium mb-1">॥ श्रेणियाँ ॥</div>
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-maroon-900">Shop by Category</h2>
           </div>
-          <Link to="/categories" className="btn-outline text-sm flex items-center gap-1">
-            View all <ChevronRight className="w-4 h-4" />
+        </div>
+      </section>
+
+      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+          Â§ 2 â€” TICKER / MARQUEE
+      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+      <div className="bg-ink text-concrete py-3 overflow-hidden whitespace-nowrap text-[10px] uppercase tracking-[0.3em] font-mono">
+        <div className="inline-block animate-[marquee_22s_linear_infinite]">
+          {Array(6).fill('GARMENT DYED â€” FREE RETURNS â€” 60+ STYLES â€” COLLECTION 004 LIVE â€” HEAVY FRENCH TERRY â€” ARCHITECTURAL FIT â€” ').join('')}
+        </div>
+        <style>{`@keyframes marquee { from { transform: translateX(0) } to { transform: translateX(-50%) } }`}</style>
+      </div>
+
+      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+          Â§ 3 â€” HORIZONTAL PRODUCT STRIP  "Essentials"
+      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+      <section className="py-20 overflow-hidden">
+        <div className="container-x mb-8 flex items-end justify-between">
+          <div>
+            <div className="text-[10px] uppercase tracking-[0.3em] text-ink/40 font-mono mb-2">Â§ 02</div>
+            <h2
+              className="text-5xl md:text-6xl text-ink leading-[0.85] tracking-tighter"
+              style={{ fontFamily: 'Anton, Impact, sans-serif', textTransform: 'uppercase' }}
+            >
+              Essentials
+            </h2>
+          </div>
+          <Link to="/shop" className="text-xs uppercase tracking-widest font-bold border-b border-ink pb-0.5 link-strike hidden md:block">
+            View All
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-          {categories.map((c, i) => {
-            const grad = CAT_GRAD[c.slug] || 'from-saffron-500 to-maroon-600';
-            const featured = i < 2;
-            return (
-              <Link
-                key={c._id}
-                to={`/shop/${c.slug}`}
-                className={`group relative rounded-2xl overflow-hidden bg-gradient-to-br ${grad} text-white p-5 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ${featured ? 'md:col-span-2' : ''}`}
-                style={{ minHeight: featured ? '170px' : '130px' }}
-              >
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-                <div className="relative">
-                  <div className={`${featured ? 'text-5xl mb-3' : 'text-3xl mb-2'}`}>{c.icon}</div>
-                  <div className={`font-bold leading-snug ${featured ? 'text-xl' : 'text-sm'}`}>{c.name}</div>
-                  <div className="text-white/70 text-xs mt-1">{c.productCount} items</div>
-                  {featured && c.description && (
-                    <div className="text-white/65 text-xs mt-2 line-clamp-2 leading-relaxed">{c.description}</div>
-                  )}
+        {/* Horizontal scrolling strip */}
+        <div
+          ref={scrollRef}
+          className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-none px-6 lg:px-14 pb-4"
+        >
+          {(featured.length > 0 ? featured : products).map((product, i) => (
+            <Link
+              key={product._id}
+              to={`/product/${product.slug}`}
+              className="relative flex-none w-[260px] snap-start group"
+            >
+              {/* Image â€” 3:4 aspect */}
+              <div className="relative overflow-hidden bg-ink/5" style={{ aspectRatio: '3/4' }}>
+                {product.images?.[0] ? (
+                  <>
+                    <img
+                      src={product.images[0]}
+                      alt={product.name}
+                      className="absolute inset-0 w-full h-full object-cover img-cinematic"
+                    />
+                    {/* Secondary image fades in */}
+                    {product.images[1] && (
+                      <img
+                        src={product.images[1]}
+                        alt={product.name}
+                        className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                      />
+                    )}
+                  </>
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center bg-ink/5">
+                    <span className="text-5xl opacity-30">P</span>
+                  </div>
+                )}
+                {/* Tech label */}
+                {i % 3 === 0 && (
+                  <div className="tech-label bottom-3 left-3">
+                    {product.material || 'Garment Dyed'}
+                  </div>
+                )}
+                {i % 3 === 1 && (
+                  <div className="tech-label bottom-3 left-3">500gsm</div>
+                )}
+              </div>
+
+              {/* Metadata */}
+              <div className="pt-3">
+                <div className="text-xs font-bold uppercase tracking-wider text-ink line-clamp-1">
+                  {product.name}
                 </div>
-                <ArrowRight className="absolute bottom-4 right-4 w-4 h-4 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0 transition-all" />
-              </Link>
-            );
-          })}
+                <div className="mt-1 text-sm font-mono text-ink/70">
+                  ${product.price}
+                </div>
+              </div>
+            </Link>
+          ))}
         </div>
       </section>
 
-      {/* ════════════════ FEATURED PRODUCTS ════════════════ */}
-      {featured.length > 0 && (
-        <section className="bg-gradient-to-b from-saffron-50/60 to-cream py-16">
-          <div className="container-x">
-            <div className="flex items-end justify-between mb-8">
-              <div>
-                <div className="text-saffron-700 text-sm font-devanagari mb-1">॥ विशेष चयन ॥</div>
-                <h2 className="font-display text-3xl md:text-4xl font-bold text-maroon-900">Featured Sacred Picks</h2>
-                <p className="text-maroon-600/70 text-sm mt-1">Handpicked for their purity, craftsmanship and devotional significance</p>
-              </div>
-              <Link to="/shop?featured=true" className="btn-outline text-sm hidden md:flex items-center gap-1">
-                See all <ChevronRight className="w-4 h-4" />
-              </Link>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {featured.map(p => <ProductCard key={p._id} product={p} />)}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* ════════════════ FESTIVAL BANNER ════════════════ */}
-      <section className="container-x py-12">
-        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-maroon-900 via-maroon-800 to-maroon-700 p-10 md:p-16">
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-0 right-0 w-80 h-80 bg-saffron-500/10 rounded-full blur-3xl" />
-            <div className="absolute bottom-0 left-1/3 w-60 h-60 bg-saffron-700/10 rounded-full blur-2xl" />
-            <div className="absolute top-6 right-10 font-devanagari text-[9rem] text-white/[0.04] leading-none select-none">॥</div>
-          </div>
-          <div className="relative grid md:grid-cols-2 gap-10 items-center">
-            <div className="text-white">
-              <div className="font-devanagari text-saffron-300 text-lg mb-2">॥ महोत्सव विशेष ॥</div>
-              <h2 className="font-display text-4xl md:text-5xl font-bold leading-tight">
-                Festive Collection<br />is Here
+      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+          Â§ 4 â€” TECHNICAL INFO GRID  "Architecture"
+      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+      <section className="border-t border-ink/20 py-20">
+        <div className="container-x">
+          <div className="grid grid-cols-12 gap-6">
+            {/* Left 4 cols â€” sticky */}
+            <div className="col-span-12 md:col-span-4 md:sticky md:top-24 self-start">
+              <div className="text-[10px] uppercase tracking-[0.3em] text-ink/40 font-mono mb-3">Â§ 03</div>
+              <h2
+                className="text-5xl text-ink leading-[0.85] tracking-tighter mb-8"
+                style={{ fontFamily: 'Anton, Impact, sans-serif', textTransform: 'uppercase' }}
+              >
+                Architecture
               </h2>
-              <p className="mt-4 text-saffron-100/80 text-lg leading-relaxed">
-                Up to <strong className="text-saffron-400">40% OFF</strong> on handpicked diyas, brass idols, complete thali sets and more. This season, light up your home with authentic puja essentials.
+              <p className="text-sm text-ink/60 font-body tracking-wide leading-relaxed mb-10 max-w-xs">
+                Every garment is an engineering problem solved. Here is how we build.
               </p>
-              <Link to="/shop" className="mt-8 inline-flex items-center gap-2 btn bg-saffron-500 hover:bg-saffron-400 text-white font-semibold">
-                Shop Collection <ArrowRight className="w-4 h-4" />
-              </Link>
+
+              <div className="space-y-6">
+                {ARCH_ITEMS.map((item) => (
+                  <div key={item.label} className="border-l-2 border-ink pl-4">
+                    <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-ink font-mono mb-1">
+                      {item.label}
+                    </div>
+                    <p className="text-xs text-ink/60 font-body leading-relaxed">{item.desc}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { e: '🪔', l: 'Diya Sets', off: '35% off' },
-                { e: '🕉️', l: 'Brass Idols', off: '40% off' },
-                { e: '🍽️', l: 'Thali Sets', off: '30% off' },
-                { e: '📿', l: 'Rudraksha', off: '25% off' },
-              ].map(item => (
-                <div key={item.l} className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-5 text-center text-white hover:bg-white/10 transition-colors">
-                  <div className="text-4xl mb-2">{item.e}</div>
-                  <div className="font-semibold text-sm">{item.l}</div>
-                  <div className="text-saffron-400 font-bold text-sm mt-1">{item.off}</div>
+
+            {/* Right 8 cols â€” varied images */}
+            <div className="col-span-12 md:col-span-8 grid grid-cols-2 gap-4">
+              {(products.length > 0 ? products : featured).slice(0, 6).map((product, i) => (
+                <div
+                  key={product._id}
+                  className="relative overflow-hidden bg-ink/5 group"
+                  style={{ aspectRatio: i % 3 === 0 ? '4/5' : '1/1' }}
+                >
+                  {product.images?.[0] ? (
+                    <img
+                      src={product.images[0]}
+                      alt={product.name}
+                      className="w-full h-full object-cover img-cinematic"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-ink/5">
+                      <span className="text-4xl opacity-20">P</span>
+                    </div>
+                  )}
+                  {/* Tech label â€” bottom-right on even */}
+                  {i % 2 === 0 && (
+                    <div className="tech-label bottom-3 right-3">
+                      {['Chainstitch', 'Felled Seam', 'YKK Hardware'][i % 3]}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -253,122 +273,141 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ════════════════ WHY CHOOSE DEVAPI ════════════════ */}
-      <section className="container-x py-16">
-        <div className="text-center mb-12">
-          <div className="text-saffron-700 text-sm font-devanagari mb-1">॥ विश्वास ॥</div>
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-maroon-900">Why Choose Devapi?</h2>
-          <p className="mt-3 text-maroon-700/70 max-w-2xl mx-auto">
-            We are not just a store — we are a dedication to the sacred traditions of Bharat and the artisans who keep them alive.
-          </p>
-        </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {[
-            { icon: ShieldCheck, t: 'Pran-Pratishtha Blessed', d: 'Every idol and yantra is properly energised through Vedic rituals by experienced pandits before being shipped. You receive divinity, not just a product.' },
-            { icon: Sparkles, t: 'Artisan Crafted in India', d: 'Our products come from generational craftsmen of Varanasi, Jaipur and Moradabad — masters who pour devotion into every chisel stroke and casting mould.' },
-            { icon: Truck, t: 'Safe & Secure Delivery', d: 'Specially designed packaging with foam cushioning and anti-scratch wrap ensures your puja items reach you in pristine condition, pan-India.' },
-            { icon: Leaf, t: 'Pure & Natural Materials', d: 'Pure 100% brass and copper, genuine rudraksha beads, natural camphor, real sandalwood — we never compromise on the purity of sacred materials.' },
-            { icon: Flame, t: 'Authentic Traditions', d: 'Every product is sourced keeping shastra requirements in mind — correct metal alloys, prescribed shapes, and precise muhurat timing for maximum spiritual benefit.' },
-            { icon: BookOpen, t: 'Puja Guidance Included', d: 'Each product comes with a guidance booklet covering the correct way to use it, the prayers to chant, installation method and the deep significance behind each item.' },
-          ].map(({ icon: Icon, t, d }) => (
-            <div key={t} className="card p-6 hover:shadow-glow hover:-translate-y-1 transition-all duration-300 group">
-              <div className="w-12 h-12 rounded-2xl bg-saffron-100 flex items-center justify-center mb-4 group-hover:bg-gradient-to-br group-hover:from-saffron-500 group-hover:to-maroon-600 transition-all duration-300">
-                <Icon className="w-6 h-6 text-saffron-700 group-hover:text-white transition-colors duration-300" />
-              </div>
-              <h3 className="font-display text-lg font-bold text-maroon-900">{t}</h3>
-              <p className="mt-2 text-sm text-maroon-700/80 leading-relaxed">{d}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ════════════════ BESTSELLERS ════════════════ */}
-      {bestsellers.length > 0 && (
-        <section className="bg-gradient-to-b from-saffron-50/60 to-cream py-16">
-          <div className="container-x">
-            <div className="flex items-end justify-between mb-8">
-              <div>
-                <div className="text-saffron-700 text-sm font-devanagari mb-1">॥ लोकप्रिय ॥</div>
-                <h2 className="font-display text-3xl md:text-4xl font-bold text-maroon-900">Bestsellers</h2>
-                <p className="text-maroon-600/70 text-sm mt-1">Most loved by our community of devoted shoppers</p>
-              </div>
-              <Link to="/shop?bestseller=true" className="btn-outline text-sm hidden md:flex items-center gap-1">
-                View all <ChevronRight className="w-4 h-4" />
-              </Link>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {bestsellers.map(p => <ProductCard key={p._id} product={p} />)}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* ════════════════ PUJA GUIDES ════════════════ */}
-      <section className="container-x py-16">
-        <div className="text-center mb-10">
-          <div className="text-saffron-700 text-sm font-devanagari mb-1">॥ ज्ञान ॥</div>
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-maroon-900">Puja Guides & Sacred Wisdom</h2>
-          <p className="mt-2 text-maroon-600/70 text-sm">Deepen your devotional practice with our expert guides</p>
-        </div>
-        <div className="grid md:grid-cols-3 gap-6">
-          {[
-            { e: '🪔', t: 'How to Perform Diwali Puja at Home', d: 'A step-by-step guide covering the traditional Lakshmi-Ganesh puja — from the right samagri and correct placement to the exact mantras and sequences to follow.', tag: 'Festival Rituals', bg: 'from-orange-100 to-amber-100' },
-            { e: '📿', t: 'Choosing the Right Rudraksha for You', d: 'Learn about all 21 types of rudraksha beads, their planetary connections, specific physical and spiritual benefits, and how to wear, clean and maintain them properly.', tag: 'Spiritual Guide', bg: 'from-amber-100 to-yellow-100' },
-            { e: '🔥', t: 'Complete Guide to Performing Havan', d: 'Everything you need — from gathering the right havan samagri and choosing the correct kund size, to kindling the sacred fire and performing the ahuti with proper mantras.', tag: 'Havan Vidhi', bg: 'from-red-100 to-orange-100' },
-          ].map(({ e, t, d, tag, bg }) => (
-            <div key={t} className="card overflow-hidden group hover:shadow-glow hover:-translate-y-1 transition-all duration-300">
-              <div className={`h-40 bg-gradient-to-br ${bg} flex items-center justify-center`}>
-                <span className="text-7xl group-hover:scale-110 transition-transform duration-300">{e}</span>
-              </div>
-              <div className="p-5">
-                <span className="chip text-xs">{tag}</span>
-                <h3 className="font-display font-bold text-maroon-900 mt-3 leading-tight">{t}</h3>
-                <p className="text-sm text-maroon-700/80 mt-2 leading-relaxed">{d}</p>
-                <button className="mt-4 text-saffron-700 text-sm font-semibold flex items-center gap-1 hover:gap-2 transition-all">
-                  Read more <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ════════════════ TESTIMONIALS ════════════════ */}
-      <section className="bg-gradient-to-br from-maroon-900 via-maroon-800 to-maroon-700 py-20">
+      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+          Â§ 5 â€” LIVE INVENTORY GRID  "Broken grid"
+      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+      <section className="border-t border-ink/20 py-20 bg-concrete">
         <div className="container-x">
-          <div className="text-center mb-12">
-            <div className="text-saffron-400 font-devanagari text-lg mb-1">॥ आशीर्वाद ॥</div>
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-white">What Our Devotees Say</h2>
-            <p className="text-saffron-200/50 mt-2 text-sm">Trusted by 10,000+ devotees across India</p>
+          <div className="flex items-end justify-between mb-10">
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.3em] text-ink/40 font-mono mb-2">Â§ 04</div>
+              <h2
+                className="text-5xl md:text-6xl text-ink leading-[0.85] tracking-tighter"
+                style={{ fontFamily: 'Anton, Impact, sans-serif', textTransform: 'uppercase' }}
+              >
+                In Stock<br />
+                <span className="text-ink/30">Now</span>
+              </h2>
+            </div>
+            {/* Live indicator */}
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+              <span className="text-[10px] uppercase tracking-[0.25em] text-ink/50 font-mono">Live Inventory</span>
+            </div>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[
-              { n: 'Radhika Sharma', c: 'New Delhi', r: 5, p: 'Brass Ganesha Idol', t: 'The Ganesha idol I received is absolutely divine — solid brass, beautifully polished with intricate detailing. My mandir has never felt more peaceful. The packaging was exceptional. Jai Ganesh! 🙏' },
-              { n: 'Amit Kulkarni', c: 'Pune', r: 5, p: 'Complete Brass Thali Set', t: 'Ordered the complete thali set for Ganesh Chaturthi. It arrived well-packaged in just 2 days. The quality is genuinely temple-grade — each item is crafted to perfection. Very satisfied!' },
-              { n: 'Priya Iyer', c: 'Bengaluru', r: 5, p: '5 Mukhi Rudraksha Mala', t: 'The rudraksha mala feels genuinely energised. I notice positive vibrations during every japa session. The beads are authentic, well-knotted, and the thread is sturdy. Highly recommended!' },
-              { n: 'Vikram Singh', c: 'Jaipur', r: 5, p: 'Shree Yantra – Copper', t: 'The Shree Yantra came with precise geometric lines and a proper puja vidhi booklet. It was clearly energised — you can sense the vibration. My home\'s energy has visibly shifted.' },
-              { n: 'Meena Trivedi', c: 'Varanasi', r: 5, p: 'Marble Lakshmi Murti', t: 'Coming from Varanasi, I have seen thousands of idols. The marble Lakshmi from Devapi matches the finest work on Vishwanath Gali. Pure white marble, smooth finish and flawless carving.' },
-              { n: 'Rohit Gupta', c: 'Mumbai', r: 4, p: 'Copper Havan Kund', t: 'Perfect havan kund for our weekly Satyanarayan katha. The right size for home use, solid copper construction and the quality is excellent. Delivery was prompt and packaging was protective.' },
-            ].map(({ n, c, r, p, t }) => (
-              <div key={n} className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6 flex flex-col">
-                <div className="flex text-saffron-400 mb-2">
-                  {[1,2,3,4,5].map(i => (
-                    <Star key={i} className={`w-4 h-4 ${i <= r ? 'fill-current' : 'opacity-20'}`} />
-                  ))}
+
+          {/* Broken / staggered grid */}
+          <div className="grid grid-cols-12 gap-4">
+            {products.slice(0, 9).map((product, i) => {
+              /* Varying spans for editorial broken grid */
+              const span = [6, 3, 3, 3, 6, 3, 3, 3, 6][i] || 3;
+              const offset = [0, 0, 0, 0, 24, 0, 24, 0, 0][i];
+              const outOfStock = oos(product._id);
+
+              return (
+                <div
+                  key={product._id}
+                  className={`col-span-12 sm:col-span-6 md:col-span-${span} group`}
+                  style={{ marginTop: offset ? `${offset * 4}px` : undefined }}
+                >
+                  <Link to={`/product/${product.slug}`} className="block">
+                    {/* Image */}
+                    <div className="relative overflow-hidden bg-ink/5" style={{ aspectRatio: '3/4' }}>
+                      {product.images?.[0] ? (
+                        <img
+                          src={product.images[0]}
+                          alt={product.name}
+                          className="w-full h-full object-cover img-cinematic"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <span className="text-4xl opacity-20">P</span>
+                        </div>
+                      )}
+                      {product.stock === 0 && (
+                        <div className="absolute inset-0 bg-concrete/60 flex items-center justify-center">
+                          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-ink/50 font-mono">
+                            Sold Out
+                          </span>
+                        </div>
+                      )}
+                      {/* Tech label */}
+                      {product.material && (
+                        <div className="tech-label top-3 left-3">{product.material}</div>
+                      )}
+                    </div>
+
+                    {/* Info */}
+                    <div className="pt-3">
+                      <div className="text-[11px] font-bold uppercase tracking-wider text-ink line-clamp-1">
+                        {product.name}
+                      </div>
+                      <div className="mt-1 text-xs font-mono text-ink/50">${product.price}</div>
+
+                      {/* Size rail */}
+                      <div className="mt-2 flex gap-2 flex-wrap">
+                        {SIZES.map((s) => (
+                          <span
+                            key={s}
+                            className={`text-[10px] font-mono ${
+                              outOfStock.includes(s)
+                                ? 'text-ink/25 line-through'
+                                : 'text-ink/60'
+                            }`}
+                          >
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </Link>
                 </div>
-                <Quote className="w-6 h-6 text-saffron-700/40 mb-2" />
-                <p className="text-saffron-100/85 text-sm leading-relaxed flex-1">"{t}"</p>
-                <div className="mt-5 pt-4 border-t border-white/10 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-saffron-500 to-maroon-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
-                    {n.charAt(0)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-white font-semibold text-sm">{n}</div>
-                    <div className="text-saffron-400/60 text-xs">{c}</div>
-                  </div>
-                  <div className="shrink-0 text-[10px] px-2 py-1 rounded-full bg-white/10 border border-white/10 text-saffron-300 max-w-[90px] truncate" title={p}>
-                    {p}
-                  </div>
+              );
+            })}
+          </div>
+
+          <div className="mt-12 text-center">
+            <Link to="/shop" className="btn-brutal inline-flex items-center gap-2">
+              View Full Inventory <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+          Â§ 6 â€” MASONRY SOCIAL PROOF
+      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+      <section className="border-t border-ink/20 py-20 bg-concrete">
+        <div className="container-x">
+          <div className="mb-10">
+            <div className="text-[10px] uppercase tracking-[0.3em] text-ink/40 font-mono mb-2">Â§ 05</div>
+            <h2
+              className="text-5xl md:text-6xl text-ink leading-[0.85] tracking-tighter"
+              style={{ fontFamily: 'Anton, Impact, sans-serif', textTransform: 'uppercase' }}
+            >
+              The<br />Verdict
+            </h2>
+          </div>
+
+          {/* Masonry â€” columns-3 */}
+          <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
+            {TESTIMONIALS.map((t) => (
+              <div
+                key={t.handle}
+                className={`break-inside-avoid inline-block w-full p-6 ${
+                  t.variant === 'fill'
+                    ? 'bg-concrete border border-ink'
+                    : 'bg-transparent border border-ink'
+                } transform ${t.rotate}`}
+              >
+                <p className="text-sm font-mono leading-relaxed text-ink mb-4">
+                  &ldquo;{t.quote}&rdquo;
+                </p>
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-ink flex-none" />
+                  <span className="text-[10px] uppercase tracking-[0.2em] text-ink/50 font-mono">
+                    {t.handle}
+                  </span>
                 </div>
               </div>
             ))}
@@ -376,36 +415,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ════════════════ NEWSLETTER ════════════════ */}
-      <section className="container-x py-16">
-        <div className="card p-10 md:p-16 text-center relative overflow-hidden">
-          <div className="absolute inset-0 bg-hero-pattern opacity-30 pointer-events-none" />
-          <div className="relative">
-            <span className="text-5xl">🙏</span>
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-maroon-900 mt-4">
-              Festival Reminders & Members-Only Offers
-            </h2>
-            <p className="mt-3 text-maroon-700/70 max-w-lg mx-auto leading-relaxed">
-              Subscribe for festival puja guides, auspicious muhurat reminders, and exclusive discount offers for members. No spam.
-            </p>
-            <form
-              onSubmit={(e) => { e.preventDefault(); setEmail(''); toast && (window.alert('Subscribed! 🙏')); }}
-              className="mt-8 flex gap-3 max-w-md mx-auto"
-            >
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="your@email.com"
-                className="input flex-1"
-              />
-              <button type="submit" className="btn-primary shrink-0">Subscribe</button>
-            </form>
-            <p className="mt-3 text-xs text-maroon-400">Unsubscribe anytime. We respect your privacy.</p>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }
+

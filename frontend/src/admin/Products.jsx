@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+﻿import { useEffect, useState, useCallback, useRef } from 'react';
 import api from '../api/client.js';
 import toast from 'react-hot-toast';
 import { Edit, Trash2, Plus, X, Search, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
@@ -82,33 +82,34 @@ export default function Products() {
   return (
     <div>
       {/* Header */}
-      <div className="flex flex-wrap justify-between items-start gap-3 mb-6">
-        <div>
-          <h2 className="font-display text-3xl font-bold text-maroon-900">Products</h2>
-          <p className="text-maroon-600 text-sm mt-1">{total} products total</p>
+      <div className="flex flex-wrap justify-between items-start gap-4 mb-8">
+        <div className="border border-ink p-8">
+          <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-ink/40 mb-2">Admin / Catalog</div>
+          <h1 className="text-4xl uppercase tracking-tighter leading-[0.9]" style={{ fontFamily: 'Anton, Impact, sans-serif' }}>Products</h1>
+          <p className="font-mono text-xs text-ink/40 mt-2">{total} products total</p>
         </div>
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-2 flex-wrap items-start">
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-maroon-400 pointer-events-none" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink/30 pointer-events-none" />
             <input
               placeholder="Search products..."
               value={q}
               onChange={(e) => handleSearch(e.target.value)}
-              className="input pl-9 w-52"
+              className="input-brutal pl-9 w-52"
             />
           </div>
           {/* Category filter */}
           <div className="relative">
-            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-maroon-400 pointer-events-none" />
-            <select value={catFilter} onChange={(e) => handleCatChange(e.target.value)} className="input pl-9 w-52">
+            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink/30 pointer-events-none" />
+            <select value={catFilter} onChange={(e) => handleCatChange(e.target.value)} className="input-brutal pl-9 w-52">
               <option value="">All categories</option>
               {cats.map((c) => <option key={c._id} value={c._id}>{c.name}</option>)}
             </select>
           </div>
           <button
             onClick={() => setEditing({ ...empty, category: cats[0]?._id || '' })}
-            className="btn-primary flex items-center gap-2"
+            className="btn-brutal flex items-center gap-2"
           >
             <Plus className="w-4 h-4" /> Add product
           </button>
@@ -116,10 +117,10 @@ export default function Products() {
       </div>
 
       {/* Table */}
-      <div className="card overflow-hidden">
+      <div className="border border-ink overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-saffron-50 text-maroon-700 text-xs uppercase">
+            <thead className="text-ink/40 text-[10px] uppercase tracking-widest font-mono bg-ink/5 border-b border-ink/10">
               <tr>
                 <th className="text-left p-3 pl-4">Product</th>
                 <th className="text-left p-3">Category</th>
@@ -131,72 +132,54 @@ export default function Products() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={6} className="p-10 text-center text-maroon-500">Loading...</td></tr>
+                <tr><td colSpan={6} className="p-10 text-center text-ink/40 font-mono text-sm">Loading...</td></tr>
               ) : products.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="p-12 text-center">
-                    <div className="text-4xl mb-3">🔍</div>
-                    <div className="text-maroon-700 font-medium">No products found</div>
-                    <div className="text-maroon-400 text-xs mt-1">Try clearing filters</div>
+                    <div className="text-ink/40 font-mono text-sm">No products found</div>
                   </td>
                 </tr>
               ) : products.map((p) => (
-                <tr key={p._id} className="border-t border-saffron-100 hover:bg-saffron-50/50">
+                <tr key={p._id} className="border-t border-ink/10 hover:bg-ink/5">
                   <td className="p-3 pl-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-11 h-11 rounded-xl bg-saffron-100 overflow-hidden shrink-0 flex items-center justify-center">
+                      <div className="w-11 h-11 border border-ink/20 overflow-hidden shrink-0">
                         {p.images?.[0] ? (
-                          <img
-                            src={p.images[0]}
-                            alt=""
-                            className="w-full h-full object-cover"
-                            onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.innerHTML = `<span class="text-2xl">${p.category?.icon || '🪔'}</span>`; }}
-                          />
+                          <img src={p.images[0]} alt="" className="w-full h-full object-cover grayscale" />
                         ) : (
-                          <span className="text-xl">{p.category?.icon || '🪔'}</span>
+                          <div className="w-full h-full bg-ink/5 flex items-center justify-center text-ink/20 text-xs font-mono">IMG</div>
                         )}
                       </div>
                       <div>
-                        <div className="font-semibold text-maroon-900 line-clamp-1 max-w-[200px]">{p.name}</div>
-                        <div className="text-xs text-maroon-400 font-mono">{p.slug}</div>
+                        <div className="font-bold text-ink line-clamp-1 max-w-[200px]">{p.name}</div>
+                        <div className="text-[10px] text-ink/40 font-mono">{p.slug}</div>
                       </div>
                     </div>
                   </td>
-                  <td className="p-3 text-maroon-700">
-                    <div className="flex items-center gap-1">
-                      <span className="text-base">{p.category?.icon}</span>
-                      <span>{p.category?.name}</span>
-                    </div>
+                  <td className="p-3 text-ink/70 text-xs font-mono">{p.category?.name}</td>
+                  <td className="p-3">
+                    <div className="font-mono font-bold text-ink">₹{p.price}</div>
+                    {p.mrp > p.price && <div className="text-[10px] text-ink/30 font-mono line-through">₹{p.mrp}</div>}
                   </td>
                   <td className="p-3">
-                    <div className="font-bold text-maroon-900">₹{p.price}</div>
-                    {p.mrp > p.price && <div className="text-xs text-maroon-400 line-through">₹{p.mrp}</div>}
-                  </td>
-                  <td className="p-3">
-                    <span className={`font-semibold ${p.stock < 5 ? 'text-red-600' : 'text-maroon-700'}`}>
+                    <span className={`font-mono font-bold text-sm ${p.stock < 5 ? 'text-accent' : 'text-ink'}`}>
                       {p.stock}
                     </span>
                   </td>
                   <td className="p-3">
                     <div className="flex gap-1 flex-wrap">
-                      {p.featured && <span className="chip text-[10px]">Featured</span>}
-                      {p.bestseller && <span className="chip text-[10px]">Bestseller</span>}
-                      {p.trending && <span className="chip text-[10px]">Trending</span>}
+                      {p.featured && <span className="text-[9px] font-bold uppercase tracking-wider border border-ink px-1 py-0.5">Featured</span>}
+                      {p.bestseller && <span className="text-[9px] font-bold uppercase tracking-wider border border-ink px-1 py-0.5">Best</span>}
+                      {p.trending && <span className="text-[9px] font-bold uppercase tracking-wider border border-ink px-1 py-0.5">Trending</span>}
                     </div>
                   </td>
                   <td className="p-3 pr-4 text-right">
                     <div className="flex justify-end gap-1">
-                      <button
-                        onClick={() => setEditing({ ...p, category: p.category?._id || p.category })}
-                        className="p-2 hover:bg-saffron-100 rounded-lg transition-colors"
-                      >
-                        <Edit className="w-4 h-4 text-maroon-700" />
+                      <button onClick={() => setEditing({ ...p, category: p.category?._id || p.category })} className="p-2 hover:bg-ink hover:text-concrete transition-colors">
+                        <Edit className="w-3 h-3" />
                       </button>
-                      <button
-                        onClick={() => remove(p._id)}
-                        className="p-2 hover:bg-red-100 rounded-lg transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4 text-red-500" />
+                      <button onClick={() => remove(p._id)} className="p-2 hover:bg-accent hover:text-white transition-colors">
+                        <Trash2 className="w-3 h-3" />
                       </button>
                     </div>
                   </td>
@@ -208,48 +191,30 @@ export default function Products() {
 
         {/* Pagination */}
         {pages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-saffron-100 bg-saffron-50/30 flex-wrap gap-3">
-            <div className="text-sm text-maroon-600">
-              {total} products &middot; Page <span className="font-semibold text-maroon-900">{page}</span> of {pages}
+          <div className="flex items-center justify-between px-4 py-3 border-t border-ink/10 flex-wrap gap-3">
+            <div className="text-xs font-mono text-ink/40">
+              {total} products &middot; Page <span className="font-bold text-ink">{page}</span> of {pages}
             </div>
             <div className="flex items-center gap-1">
-              <button
-                onClick={() => goPage(page - 1)}
-                disabled={page <= 1}
-                className="p-2 rounded-lg hover:bg-saffron-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
+              <button onClick={() => goPage(page - 1)} disabled={page <= 1} className="p-2 border border-ink/20 hover:bg-ink hover:text-concrete disabled:opacity-30 transition-colors">
+                <ChevronLeft className="w-3 h-3" />
               </button>
               {Array.from({ length: pages }, (_, i) => i + 1)
                 .filter(n => n === 1 || n === pages || Math.abs(n - page) <= 2)
-                .reduce((acc, n, i, arr) => {
-                  if (i > 0 && n - arr[i - 1] > 1) acc.push('...');
-                  acc.push(n);
-                  return acc;
-                }, [])
+                .reduce((acc, n, i, arr) => { if (i > 0 && n - arr[i - 1] > 1) acc.push('...'); acc.push(n); return acc; }, [])
                 .map((n, i) =>
                   n === '...' ? (
-                    <span key={`e${i}`} className="px-2 text-maroon-400">…</span>
+                    <span key={`e${i}`} className="px-2 text-ink/30 font-mono text-xs">â€¦</span>
                   ) : (
-                    <button
-                      key={n}
-                      onClick={() => goPage(n)}
-                      className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
-                        page === n
-                          ? 'bg-saffron-500 text-white shadow-sm'
-                          : 'hover:bg-saffron-100 text-maroon-700'
+                    <button key={n} onClick={() => goPage(n)}
+                      className={`w-7 h-7 text-xs font-mono font-bold transition-colors ${
+                        page === n ? 'bg-ink text-concrete' : 'border border-ink/20 text-ink hover:bg-ink/10'
                       }`}
-                    >
-                      {n}
-                    </button>
+                    >{n}</button>
                   )
                 )}
-              <button
-                onClick={() => goPage(page + 1)}
-                disabled={page >= pages}
-                className="p-2 rounded-lg hover:bg-saffron-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronRight className="w-4 h-4" />
+              <button onClick={() => goPage(page + 1)} disabled={page >= pages} className="p-2 border border-ink/20 hover:bg-ink hover:text-concrete disabled:opacity-30 transition-colors">
+                <ChevronRight className="w-3 h-3" />
               </button>
             </div>
           </div>
@@ -258,93 +223,91 @@ export default function Products() {
 
       {/* Add/Edit Modal */}
       {editing && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-auto shadow-2xl">
-            <div className="flex justify-between items-center p-5 border-b border-saffron-100 sticky top-0 bg-white z-10">
-              <h3 className="font-display text-2xl font-bold text-maroon-900">
-                {editing._id ? 'Edit' : 'Add'} Product
-              </h3>
-              <button onClick={() => setEditing(null)} className="p-2 rounded-lg hover:bg-saffron-100">
-                <X className="w-5 h-5" />
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-concrete border border-ink w-full max-w-2xl max-h-[90vh] overflow-auto">
+            <div className="flex justify-between items-center p-5 border-b border-ink sticky top-0 bg-concrete z-10">
+              <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-ink/40">{editing._id ? 'Edit' : 'Add'} Product</div>
+              <button onClick={() => setEditing(null)} className="p-1 hover:text-accent transition-colors">
+                <X className="w-4 h-4" />
               </button>
             </div>
             <form onSubmit={save} className="p-5 grid md:grid-cols-2 gap-3">
               <div className="md:col-span-2">
-                <label className="label">Name *</label>
-                <input required className="input" value={editing.name}
+                <label className="text-[10px] font-mono uppercase tracking-widest text-ink/40 block mb-1">Name *</label>
+                <input required className="input-brutal" value={editing.name}
                   onChange={(e) => setEditing({ ...editing, name: e.target.value, slug: slugify(e.target.value) })} />
               </div>
               <div>
-                <label className="label">Slug</label>
-                <input className="input" value={editing.slug}
+                <label className="text-[10px] font-mono uppercase tracking-widest text-ink/40 block mb-1">Slug</label>
+                <input className="input-brutal" value={editing.slug}
                   onChange={(e) => setEditing({ ...editing, slug: e.target.value })} />
               </div>
               <div>
-                <label className="label">Category *</label>
-                <select required className="input" value={editing.category}
+                <label className="text-[10px] font-mono uppercase tracking-widest text-ink/40 block mb-1">Category *</label>
+                <select required className="input-brutal" value={editing.category}
                   onChange={(e) => setEditing({ ...editing, category: e.target.value })}>
                   <option value="">Select category</option>
-                  {cats.map((c) => <option key={c._id} value={c._id}>{c.icon} {c.name}</option>)}
+                  {cats.map((c) => <option key={c._id} value={c._id}>{c.name}</option>)}
                 </select>
               </div>
               <div>
-                <label className="label">Price (₹) *</label>
-                <input type="number" required min={0} className="input" value={editing.price}
+                <label className="text-[10px] font-mono uppercase tracking-widest text-ink/40 block mb-1">Price (â‚¹) *</label>
+                <input type="number" required min={0} className="input-brutal" value={editing.price}
                   onChange={(e) => setEditing({ ...editing, price: +e.target.value })} />
               </div>
               <div>
-                <label className="label">MRP (₹) *</label>
-                <input type="number" required min={0} className="input" value={editing.mrp}
+                <label className="text-[10px] font-mono uppercase tracking-widest text-ink/40 block mb-1">MRP (â‚¹) *</label>
+                <input type="number" required min={0} className="input-brutal" value={editing.mrp}
                   onChange={(e) => setEditing({ ...editing, mrp: +e.target.value })} />
               </div>
               <div>
-                <label className="label">Stock</label>
-                <input type="number" min={0} className="input" value={editing.stock}
+                <label className="text-[10px] font-mono uppercase tracking-widest text-ink/40 block mb-1">Stock</label>
+                <input type="number" min={0} className="input-brutal" value={editing.stock}
                   onChange={(e) => setEditing({ ...editing, stock: +e.target.value })} />
               </div>
               <div>
-                <label className="label">Material</label>
-                <input className="input" value={editing.material}
+                <label className="text-[10px] font-mono uppercase tracking-widest text-ink/40 block mb-1">Material</label>
+                <input className="input-brutal" value={editing.material}
                   onChange={(e) => setEditing({ ...editing, material: e.target.value })} />
               </div>
               <div>
-                <label className="label">Weight</label>
-                <input className="input" value={editing.weight}
+                <label className="text-[10px] font-mono uppercase tracking-widest text-ink/40 block mb-1">Weight</label>
+                <input className="input-brutal" value={editing.weight}
                   onChange={(e) => setEditing({ ...editing, weight: e.target.value })} />
               </div>
               <div>
-                <label className="label">Dimensions</label>
-                <input className="input" value={editing.dimensions}
+                <label className="text-[10px] font-mono uppercase tracking-widest text-ink/40 block mb-1">Dimensions</label>
+                <input className="input-brutal" value={editing.dimensions}
                   onChange={(e) => setEditing({ ...editing, dimensions: e.target.value })} />
               </div>
               <div className="md:col-span-2">
-                <label className="label">Short description</label>
-                <input className="input" value={editing.shortDescription}
+                <label className="text-[10px] font-mono uppercase tracking-widest text-ink/40 block mb-1">Short description</label>
+                <input className="input-brutal" value={editing.shortDescription}
                   onChange={(e) => setEditing({ ...editing, shortDescription: e.target.value })} />
               </div>
               <div className="md:col-span-2">
-                <label className="label">Description *</label>
-                <textarea required rows={4} className="input" value={editing.description}
+                <label className="text-[10px] font-mono uppercase tracking-widest text-ink/40 block mb-1">Description *</label>
+                <textarea required rows={4} className="input-brutal" value={editing.description}
                   onChange={(e) => setEditing({ ...editing, description: e.target.value })} />
               </div>
               <div className="md:col-span-2">
-                <label className="label">Image URLs (one per line)</label>
-                <textarea rows={3} className="input font-mono text-sm" placeholder="https://..."
+                <label className="text-[10px] font-mono uppercase tracking-widest text-ink/40 block mb-1">Image URLs (one per line)</label>
+                <textarea rows={3} className="input-brutal font-mono text-sm" placeholder="https://..."
                   value={editing.images.join('\n')}
                   onChange={(e) => setEditing({ ...editing, images: e.target.value.split('\n') })} />
               </div>
               <div className="md:col-span-2 flex gap-6 flex-wrap">
                 {[['featured', 'Featured'], ['trending', 'Trending'], ['bestseller', 'Bestseller']].map(([k, l]) => (
-                  <label key={k} className="flex items-center gap-2 text-sm cursor-pointer">
+                  <label key={k} className="flex items-center gap-2 text-sm cursor-pointer font-mono uppercase tracking-wider text-[10px] text-ink">
                     <input type="checkbox" checked={editing[k]}
                       onChange={(e) => setEditing({ ...editing, [k]: e.target.checked })} />
                     {l}
                   </label>
                 ))}
               </div>
-              <div className="md:col-span-2 flex gap-2 pt-3 border-t border-saffron-100">
-                <button className="btn-primary flex-1">Save product</button>
-                <button type="button" onClick={() => setEditing(null)} className="btn-ghost">Cancel</button>
+              <div className="md:col-span-2 flex gap-2 pt-3 border-t border-ink/10">
+                <button className="btn-brutal flex-1">Save product</button>
+                <button type="button" onClick={() => setEditing(null)} className="btn-brutal-outline">Cancel</button>
               </div>
             </form>
           </div>

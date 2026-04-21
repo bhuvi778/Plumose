@@ -24,7 +24,7 @@ import { useAuth } from './context/AuthContext.jsx';
 
 function Protected({ children, adminOnly = false }) {
   const { user, loading } = useAuth();
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-saffron-700">Loading...</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-ink text-xs uppercase tracking-widest font-mono">Loading…</div>;
   if (!user) return <Navigate to="/login" replace />;
   if (adminOnly && user.role !== 'admin') return <Navigate to="/" replace />;
   return children;
