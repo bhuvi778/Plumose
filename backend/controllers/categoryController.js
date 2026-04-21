@@ -5,8 +5,10 @@ import Product from '../models/Product.js';
 export const getCategories = asyncHandler(async (req, res) => {
   const { vertical } = req.query;
   const filter = {};
-  if (vertical && ['devapi', 'herbal'].includes(vertical)) {
-    filter.vertical = vertical;
+  if (vertical === 'devapi') {
+    filter.$or = [{ vertical: 'devapi' }, { vertical: { $exists: false } }, { vertical: null }];
+  } else if (vertical === 'herbal') {
+    filter.vertical = 'herbal';
   }
   const categories = await Category.find(filter).sort({ order: 1, name: 1 });
   const withCounts = await Promise.all(

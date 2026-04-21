@@ -11,8 +11,11 @@ export const getProducts = asyncHandler(async (req, res) => {
 
   // Filter by vertical — via Category join
   let verticalCategoryIds = null;
-  if (vertical && ['devapi', 'herbal'].includes(vertical)) {
-    const catsInVertical = await Category.find({ vertical }, '_id');
+  if (vertical === 'devapi' || vertical === 'herbal') {
+    const catFilter = vertical === 'devapi'
+      ? { $or: [{ vertical: 'devapi' }, { vertical: { $exists: false } }, { vertical: null }] }
+      : { vertical: 'herbal' };
+    const catsInVertical = await Category.find(catFilter, '_id');
     verticalCategoryIds = catsInVertical.map((c) => c._id);
   }
 

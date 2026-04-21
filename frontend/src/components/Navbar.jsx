@@ -2,16 +2,16 @@
 import { useState, useEffect } from 'react';
 import {
   ShoppingBag, User, LogOut, Package, LayoutDashboard, X, Menu,
-  Heart, Home as HomeIcon, Grid3x3, ChevronDown, Leaf, Truck, Sparkles,
+  Heart, Leaf, Truck, Sparkles, Search,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useCart } from '../context/CartContext.jsx';
 import { useVertical } from '../context/VerticalContext.jsx';
 
 const VERTICALS = [
-  { key: 'devapi', label: 'Devapi', sub: 'Puja & Pooja', to: '/devapi', Icon: Sparkles },
-  { key: 'herbal', label: 'Herbal', sub: 'Ayurveda & Wellness', to: '/herbal', Icon: Leaf },
-  { key: 'courier', label: 'DTDC', sub: 'Courier & Cargo', to: '/courier', Icon: Truck },
+  { key: 'devapi', label: 'Devapi', sub: 'Puja', to: '/devapi', Icon: Sparkles },
+  { key: 'herbal', label: 'Herbal', sub: 'Ayurveda', to: '/herbal', Icon: Leaf },
+  { key: 'courier', label: 'Courier', sub: 'DTDC', to: '/courier', Icon: Truck },
 ];
 
 export default function Navbar() {
@@ -20,7 +20,6 @@ export default function Navbar() {
   const { vertical, config } = useVertical();
   const [menu, setMenu] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [vertOpen, setVertOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
 
@@ -38,15 +37,13 @@ export default function Navbar() {
     { to: `${base}/shop`, label: 'Shop' },
     { to: `${base}/categories`, label: 'Categories' },
   ];
-
   const courierLinks = [
     { to: '/courier', label: 'Home', end: true },
     { to: '/courier/services', label: 'Services' },
     { to: '/courier/track', label: 'Track' },
-    { to: '/courier/rate', label: 'Rate Enquiry' },
+    { to: '/courier/rate', label: 'Rate' },
     { to: '/courier/contact', label: 'Contact' },
   ];
-
   const links = vertical === 'courier' ? courierLinks : (isShop ? shopLinks : []);
 
   return (
@@ -56,61 +53,55 @@ export default function Navbar() {
           scrolled ? 'bg-surface/95 backdrop-blur-md shadow-soft' : 'bg-surface/80 backdrop-blur-sm'
         } border-b border-brand/10`}
       >
-        <div className="container-x flex items-center justify-between h-20 gap-4">
-          {/* Logo + vertical switcher */}
-          <div className="flex items-center gap-4">
-            <Link to="/" className="group flex items-center gap-2">
-              <span className="font-display text-2xl font-bold text-brand-dark leading-none">
-                Plumose
-              </span>
-            </Link>
-
-            <div className="hidden md:block w-px h-6 bg-brand/20" />
-
-            <div className="relative hidden md:block">
-              <button
-                onClick={() => setVertOpen(!vertOpen)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand/5 border border-brand/20 text-sm font-medium text-brand hover:bg-brand/10 transition"
+        {/* Vertical tabs strip - always visible */}
+        <div className="border-b border-brand/10 bg-surface-soft/40">
+          <div className="container-x flex items-center justify-between h-10">
+            <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
+              <Link
+                to="/"
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider transition whitespace-nowrap ${
+                  vertical === 'hub'
+                    ? 'bg-ink text-white'
+                    : 'text-ink-soft hover:text-ink'
+                }`}
               >
-                {vertical !== 'hub' && (
-                  <>
-                    {(() => {
-                      const v = VERTICALS.find((x) => x.key === vertical);
-                      const Icon = v?.Icon;
-                      return Icon ? <Icon className="w-3.5 h-3.5" /> : null;
-                    })()}
-                  </>
-                )}
-                <span>{vertical === 'hub' ? 'Choose a vertical' : config.name}</span>
-                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${vertOpen ? 'rotate-180' : ''}`} />
-              </button>
-              {vertOpen && (
-                <div
-                  className="absolute left-0 mt-2 w-64 card p-2 z-50 animate-fade-in"
-                  onMouseLeave={() => setVertOpen(false)}
+                Plumose
+              </Link>
+              <span className="w-px h-4 bg-brand/20 mx-1" />
+              {VERTICALS.map(({ key, label, sub, to, Icon }) => (
+                <Link
+                  key={key}
+                  to={to}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider transition whitespace-nowrap ${
+                    vertical === key
+                      ? 'bg-brand text-white shadow-soft'
+                      : 'text-ink-soft hover:text-ink hover:bg-brand/5'
+                  }`}
                 >
-                  {VERTICALS.map(({ key, label, sub, to, Icon }) => (
-                    <Link
-                      key={key}
-                      to={to}
-                      onClick={() => setVertOpen(false)}
-                      className={`flex items-start gap-3 p-3 rounded-xl transition ${
-                        vertical === key ? 'bg-brand/10' : 'hover:bg-brand/5'
-                      }`}
-                    >
-                      <div className="w-9 h-9 rounded-lg bg-brand/10 text-brand flex items-center justify-center flex-shrink-0">
-                        <Icon className="w-4 h-4" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-sm font-semibold text-ink">{label}</div>
-                        <div className="text-[11px] text-ink-soft">{sub}</div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              )}
+                  <Icon className="w-3 h-3" />
+                  <span>{label}</span>
+                  <span className="hidden sm:inline opacity-70 normal-case font-normal tracking-normal text-[10px]">· {sub}</span>
+                </Link>
+              ))}
+            </div>
+            <div className="hidden md:flex items-center gap-3 text-[11px] text-ink-mute">
+              <span>Free delivery over ₹999</span>
             </div>
           </div>
+        </div>
+
+        {/* Main row */}
+        <div className="container-x flex items-center justify-between h-16 gap-4">
+          <Link to="/" className="flex items-center gap-2">
+            <span className="font-display text-2xl font-bold text-brand-dark leading-none">
+              {vertical === 'hub' ? 'Plumose' : config.name}
+            </span>
+            {vertical !== 'hub' && (
+              <span className="hidden sm:inline text-[11px] text-ink-mute uppercase tracking-wider border-l border-brand/20 pl-2">
+                by Plumose
+              </span>
+            )}
+          </Link>
 
           {/* Center nav */}
           <nav className="hidden lg:flex items-center gap-1">
@@ -133,7 +124,7 @@ export default function Navbar() {
           </nav>
 
           {/* Right actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {isShop && (
               <>
                 <Link
@@ -234,9 +225,7 @@ export default function Navbar() {
                     to={to}
                     onClick={() => setMobileOpen(false)}
                     className={`flex items-center gap-3 p-3 rounded-xl border transition ${
-                      vertical === key
-                        ? 'bg-brand/10 border-brand/30'
-                        : 'border-brand/10 hover:bg-brand/5'
+                      vertical === key ? 'bg-brand/10 border-brand/30' : 'border-brand/10 hover:bg-brand/5'
                     }`}
                   >
                     <div className="w-10 h-10 rounded-lg bg-brand/10 text-brand flex items-center justify-center">

@@ -1,9 +1,9 @@
-﻿import { useEffect, useState } from 'react';
+﻿import { useEffect, useState, useMemo } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import api from '../api/client.js';
 import ProductCard from '../components/ProductCard.jsx';
 import Loader from '../components/Loader.jsx';
-import { SlidersHorizontal, X, ChevronRight } from 'lucide-react';
+import { SlidersHorizontal, X, ChevronRight, ArrowRight } from 'lucide-react';
 import { useVertical } from '../context/VerticalContext.jsx';
 
 export default function Shop() {
@@ -36,13 +36,31 @@ export default function Shop() {
     if (priceRange[0]) params.set('min', priceRange[0]);
     if (priceRange[1] < 10000) params.set('max', priceRange[1]);
     if (sort !== 'newest') params.set('sort', sort);
-    params.set('limit', 48);
+    params.set('limit', 96);
     api.get(`/products?${params.toString()}`)
       .then((r) => setProducts(r.data.products))
       .finally(() => setLoading(false));
   }, [vertical, category, search, priceRange, sort]);
 
   const activeCat = categories.find((c) => c.slug === category);
+  const isAllView = !category && !search && priceRange[0] === 0 && priceRange[1] >= 10000;
+
+  // Group products by category slug for the browse view
+  const grouped = useMemo(() => {
+    const map = new Map();
+    products.forEach((p) => {
+      const slug = p.category?.slug || 'other';
+      if (!map.has(slug)) map.set(slug, { category: p.category, items: [] });
+      map.get(slug).items.push(p);
+    });
+    // Preserve ordering from `categories`
+    const ordered = [];
+    categories.forEach((c) => {
+      const g = map.get(c.slug);
+      if (g && g.items.length) ordered.push(g);
+    });
+    return ordered;
+  }, [products, categories]);
 
   return (
     <div className="container-x py-10">
@@ -65,16 +83,22 @@ export default function Shop() {
         {activeCat?.description && (
           <p className="mt-2 text-sm text-ink-soft max-w-xl">{activeCat.description}</p>
         )}
+        {!activeCat && !search && (
+          <p className="mt-2 text-sm text-ink-soft max-w-xl">
+            Browse our full {config.name} collection, organised category-wise for easy discovery.
+          </p>
+        )}
       </div>
 
       <div className="grid lg:grid-cols-[260px_1fr] gap-8">
+        {/* ── FILTER SIDEBAR ── */}
         <aside className={`${showFilter ? 'fixed inset-0 z-50 bg-surface overflow-auto p-6' : 'hidden'} lg:block lg:static lg:p-0`}>
           <div className="flex items-center justify-between mb-6 lg:hidden">
             <h3 className="display text-2xl">Filters</h3>
             <button onClick={() => setShowFilter(false)}><X className="w-5 h-5" /></button>
           </div>
 
-          <div className="card p-5 space-y-6 lg:sticky lg:top-24">
+          <div className="card p-5 space-y-6 lg:sticky lg:top-28">
             <div>
               <div className="label">Category</div>
               <div className="space-y-1 max-h-72 overflow-auto pr-1">
@@ -140,6 +164,7 @@ export default function Shop() {
           </div>
         </aside>
 
+        {/* ── RESULTS ── */}
         <div>
           <div className="flex items-center justify-between mb-6 gap-3">
             <button onClick={() => setShowFilter(true)} className="btn-outline lg:hidden text-xs py-2">
@@ -167,7 +192,44 @@ export default function Shop() {
               <h3 className="display text-2xl mb-2">No products found</h3>
               <p className="text-sm text-ink-soft">Adjust your filters or try a different search.</p>
             </div>
+          ) : isAllView && sort === 'newest' && grouped.length > 1 ? (
+            /* Category-wise grouped view (default browse) */
+            <div className="space-y-12">
+              {grouped.map(({ category: cat, items }) => (
+                <section key={cat?.slug}>
+                  <div className="flex items-end justify-between mb-4 border-b border-brand/10 pb-3">
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl">{cat?.icon || '🕉️'}</span>
+                      <div>
+                        <h2 className="display text-2xl">{cat?.name}</h2>
+                        <div className="text-[11px] text-ink-mute">{items.length} item{items.length > 1 ? 's' : ''}</div>
+                      </div>
+                    </div>
+                    <Link
+                      to={`${base}/shop/${cat?.slug}`}
+                      className="hidden md:inline-flex items-center gap-1 text-xs font-semibold text-brand hover:gap-2 transition-all"
+                    >
+                      View all <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {items.slice(0, 4).map((p) => <ProductCard key={p._id} product={p} />)}
+                  </div>
+                  {items.length > 4 && (
+                    <div className="mt-4 text-right md:hidden">
+                      <Link
+                        to={`${base}/shop/${cat?.slug}`}
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-brand"
+                      >
+                        View all {items.length} <ArrowRight className="w-3.5 h-3.5" />
+                      </Link>
+                    </div>
+                  )}
+                </section>
+              ))}
+            </div>
           ) : (
+            /* Flat grid (filtered / sorted / single category) */
             <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
               {products.map((p) => <ProductCard key={p._id} product={p} />)}
             </div>

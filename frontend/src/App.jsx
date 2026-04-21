@@ -56,7 +56,7 @@ function MainLayout() {
   return (
     <>
       <Navbar />
-      <main className="flex-1 pt-20">
+      <main className="flex-1 pt-[104px]">
         <Outlet />
       </main>
       <Footer />
