@@ -8,6 +8,12 @@ const categorySchema = new mongoose.Schema(
     image: { type: String, default: '' },
     icon: { type: String, default: '🪔' },
     order: { type: Number, default: 0 },
+    vertical: {
+      type: String,
+      enum: ['devapi', 'herbal'],
+      default: 'devapi',
+      index: true,
+    },
   },
   { timestamps: true }
 );

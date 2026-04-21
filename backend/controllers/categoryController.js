@@ -2,8 +2,13 @@ import asyncHandler from 'express-async-handler';
 import Category from '../models/Category.js';
 import Product from '../models/Product.js';
 
-export const getCategories = asyncHandler(async (_req, res) => {
-  const categories = await Category.find().sort({ order: 1, name: 1 });
+export const getCategories = asyncHandler(async (req, res) => {
+  const { vertical } = req.query;
+  const filter = {};
+  if (vertical && ['devapi', 'herbal'].includes(vertical)) {
+    filter.vertical = vertical;
+  }
+  const categories = await Category.find(filter).sort({ order: 1, name: 1 });
   const withCounts = await Promise.all(
     categories.map(async (c) => {
       const count = await Product.countDocuments({ category: c._id });

@@ -1,32 +1,41 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import api from '../api/client.js';
-import { CheckCircle2 } from 'lucide-react';
 import Loader from '../components/Loader.jsx';
+import { CheckCircle2, Package, ArrowRight } from 'lucide-react';
+import { useVertical } from '../context/VerticalContext.jsx';
 
 export default function OrderSuccess() {
   const { id } = useParams();
+  const { config } = useVertical();
+  const base = config.base;
   const [order, setOrder] = useState(null);
   useEffect(() => { api.get(`/orders/${id}`).then((r) => setOrder(r.data)); }, [id]);
   if (!order) return <Loader />;
 
   return (
-    <div className="container-x py-16 max-w-2xl text-center">
-      <CheckCircle2 className="w-20 h-20 mx-auto text-green-600" />
-      <h1 className="font-display text-4xl font-bold mt-4 text-maroon-900">Thank you for your order!</h1>
-      <p className="font-devanagari text-xl text-saffron-700 mt-2">॥ शुभमस्तु ॥</p>
-      <p className="mt-4 text-maroon-700">Your order <strong>#{order._id.slice(-8).toUpperCase()}</strong> has been placed and will be delivered soon.</p>
-      <div className="card p-6 mt-8 text-left">
-        <div className="flex justify-between text-sm"><span>Items total</span><span>₹{order.itemsTotal}</span></div>
-        <div className="flex justify-between text-sm mt-1"><span>Shipping</span><span>₹{order.shippingFee}</span></div>
-        <div className="flex justify-between text-sm mt-1"><span>Tax</span><span>₹{order.tax}</span></div>
-        <div className="flex justify-between font-bold mt-3 pt-3 border-t border-saffron-200 text-maroon-900">
-          <span>Total paid</span><span>₹{order.total}</span>
+    <div className="container-x py-20 max-w-xl mx-auto text-center">
+      <div className="w-20 h-20 mx-auto rounded-full bg-brand/15 text-brand flex items-center justify-center mb-5 animate-slide-up">
+        <CheckCircle2 className="w-10 h-10" />
+      </div>
+      <h1 className="display text-4xl md:text-5xl mb-3">Thank you!</h1>
+      <p className="text-base text-ink-soft leading-relaxed mb-8">
+        Aapka order <strong className="text-brand-dark">#{order._id.slice(-8).toUpperCase()}</strong> successfully
+        place ho gaya hai. Hum jald hi dispatch karenge.
+      </p>
+
+      <div className="card p-6 text-left space-y-3 text-sm mb-8">
+        <div className="flex justify-between"><span className="text-ink-soft">Items total</span><span>₹{order.itemsTotal}</span></div>
+        <div className="flex justify-between"><span className="text-ink-soft">Shipping</span><span>₹{order.shippingFee}</span></div>
+        <div className="flex justify-between"><span className="text-ink-soft">Tax</span><span>₹{order.tax}</span></div>
+        <div className="border-t border-brand/15 pt-3 flex justify-between font-bold text-lg">
+          <span>Total paid</span><span className="text-brand-dark">₹{order.total}</span>
         </div>
       </div>
-      <div className="mt-6 flex gap-3 justify-center">
-        <Link to="/orders" className="btn-primary">View my orders</Link>
-        <Link to="/shop" className="btn-outline">Continue shopping</Link>
+
+      <div className="flex gap-3 justify-center">
+        <Link to={`${base}/orders/${order._id}`} className="btn-primary"><Package className="w-4 h-4" /> View Order</Link>
+        <Link to={`${base}/shop`} className="btn-outline">Continue Shopping <ArrowRight className="w-4 h-4" /></Link>
       </div>
     </div>
   );

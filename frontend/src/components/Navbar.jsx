@@ -1,134 +1,293 @@
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+﻿import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { Search, Heart, ShoppingBag, User, Menu, X, LogOut, Package, LayoutDashboard } from 'lucide-react';
+import {
+  ShoppingBag, User, LogOut, Package, LayoutDashboard, X, Menu,
+  Heart, Home as HomeIcon, Grid3x3, ChevronDown, Leaf, Truck, Sparkles,
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useCart } from '../context/CartContext.jsx';
-import { useFavorites } from '../context/FavoriteContext.jsx';
+import { useVertical } from '../context/VerticalContext.jsx';
+
+const VERTICALS = [
+  { key: 'devapi', label: 'Devapi', sub: 'Puja & Pooja', to: '/devapi', Icon: Sparkles },
+  { key: 'herbal', label: 'Herbal', sub: 'Ayurveda & Wellness', to: '/herbal', Icon: Leaf },
+  { key: 'courier', label: 'DTDC', sub: 'Courier & Cargo', to: '/courier', Icon: Truck },
+];
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const { totalItems } = useCart();
-  const { favorites } = useFavorites();
-  const [open, setOpen] = useState(false);
+  const { vertical, config } = useVertical();
   const [menu, setMenu] = useState(false);
-  const [q, setQ] = useState('');
-  const navigate = useNavigate();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [vertOpen, setVertOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    const onScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const submit = (e) => {
-    e.preventDefault();
-    if (q.trim()) navigate(`/shop?search=${encodeURIComponent(q.trim())}`);
-  };
+  const isShop = vertical === 'devapi' || vertical === 'herbal';
+  const base = config.base;
 
-  const links = [
-    { to: '/', label: 'Home' },
-    { to: '/shop', label: 'Shop All' },
-    { to: '/categories', label: 'Categories' },
+  const shopLinks = [
+    { to: base, label: 'Home', end: true },
+    { to: `${base}/shop`, label: 'Shop' },
+    { to: `${base}/categories`, label: 'Categories' },
   ];
 
+  const courierLinks = [
+    { to: '/courier', label: 'Home', end: true },
+    { to: '/courier/services', label: 'Services' },
+    { to: '/courier/track', label: 'Track' },
+    { to: '/courier/rate', label: 'Rate Enquiry' },
+    { to: '/courier/contact', label: 'Contact' },
+  ];
+
+  const links = vertical === 'courier' ? courierLinks : (isShop ? shopLinks : []);
+
   return (
-    <header className={`sticky top-0 z-50 transition-all ${scrolled ? 'bg-cream/90 backdrop-blur-md shadow-sm' : 'bg-cream/70 backdrop-blur'}`}>
-      <div className="bg-maroon-900 text-saffron-100 text-xs py-1.5 text-center tracking-wide">
-        ॐ • Free shipping on orders above ₹999 • Pran-pratishtha blessed products
-      </div>
-      <div className="container-x flex items-center gap-6 py-4">
-        <Link to="/" className="flex items-center gap-2 shrink-0">
-          <span className="text-3xl">🪔</span>
-          <div className="leading-tight">
-            <div className="font-display text-2xl font-bold text-maroon-900">Devapi</div>
-            <div className="text-[10px] uppercase tracking-[0.2em] text-saffron-700">Sacred Essentials</div>
-          </div>
-        </Link>
-
-        <nav className="hidden lg:flex items-center gap-1">
-          {links.map((l) => (
-            <NavLink key={l.to} to={l.to} end={l.to === '/'}
-              className={({ isActive }) => `px-4 py-2 rounded-full text-sm font-medium transition ${isActive ? 'bg-saffron-100 text-maroon-900' : 'text-maroon-800 hover:bg-saffron-50'}`}>
-              {l.label}
-            </NavLink>
-          ))}
-        </nav>
-
-        <form onSubmit={submit} className="hidden md:flex flex-1 max-w-xl relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-maroon-500" />
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Search for idols, diyas, chunri..."
-            className="input pl-11 pr-4 bg-white"
-          />
-        </form>
-
-        <div className="flex items-center gap-1 ml-auto">
-          <Link to="/favorites" className="relative p-2.5 rounded-full hover:bg-saffron-100 transition" title="Favorites">
-            <Heart className="w-5 h-5 text-maroon-800" />
-            {favorites.products?.length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-maroon-700 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center">
-                {favorites.products.length}
+    <>
+      <header
+        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
+          scrolled ? 'bg-surface/95 backdrop-blur-md shadow-soft' : 'bg-surface/80 backdrop-blur-sm'
+        } border-b border-brand/10`}
+      >
+        <div className="container-x flex items-center justify-between h-20 gap-4">
+          {/* Logo + vertical switcher */}
+          <div className="flex items-center gap-4">
+            <Link to="/" className="group flex items-center gap-2">
+              <span className="font-display text-2xl font-bold text-brand-dark leading-none">
+                Plumose
               </span>
-            )}
-          </Link>
-          <Link to="/cart" className="relative p-2.5 rounded-full hover:bg-saffron-100 transition" title="Cart">
-            <ShoppingBag className="w-5 h-5 text-maroon-800" />
-            {totalItems > 0 && (
-              <span className="absolute -top-1 -right-1 bg-saffron-500 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center">
-                {totalItems}
-              </span>
-            )}
-          </Link>
+            </Link>
 
-          {user ? (
-            <div className="relative">
-              <button onClick={() => setMenu(!menu)} className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-saffron-100 transition">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-saffron-400 to-maroon-600 flex items-center justify-center text-white text-sm font-semibold">
-                  {user.name.charAt(0).toUpperCase()}
-                </div>
-                <span className="hidden md:inline text-sm font-medium text-maroon-900">{user.name.split(' ')[0]}</span>
+            <div className="hidden md:block w-px h-6 bg-brand/20" />
+
+            <div className="relative hidden md:block">
+              <button
+                onClick={() => setVertOpen(!vertOpen)}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand/5 border border-brand/20 text-sm font-medium text-brand hover:bg-brand/10 transition"
+              >
+                {vertical !== 'hub' && (
+                  <>
+                    {(() => {
+                      const v = VERTICALS.find((x) => x.key === vertical);
+                      const Icon = v?.Icon;
+                      return Icon ? <Icon className="w-3.5 h-3.5" /> : null;
+                    })()}
+                  </>
+                )}
+                <span>{vertical === 'hub' ? 'Choose a vertical' : config.name}</span>
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${vertOpen ? 'rotate-180' : ''}`} />
               </button>
-              {menu && (
-                <div className="absolute right-0 mt-2 w-56 card py-2 z-50" onMouseLeave={() => setMenu(false)}>
-                  <Link to="/profile" onClick={() => setMenu(false)} className="flex items-center gap-2 px-4 py-2 hover:bg-saffron-50 text-sm"><User className="w-4 h-4" /> Profile</Link>
-                  <Link to="/orders" onClick={() => setMenu(false)} className="flex items-center gap-2 px-4 py-2 hover:bg-saffron-50 text-sm"><Package className="w-4 h-4" /> My Orders</Link>
-                  {user.role === 'admin' && (
-                    <Link to="/admin" onClick={() => setMenu(false)} className="flex items-center gap-2 px-4 py-2 hover:bg-saffron-50 text-sm text-saffron-700"><LayoutDashboard className="w-4 h-4" /> Admin Panel</Link>
-                  )}
-                  <button onClick={() => { logout(); setMenu(false); }} className="w-full flex items-center gap-2 px-4 py-2 hover:bg-saffron-50 text-sm text-maroon-700">
-                    <LogOut className="w-4 h-4" /> Logout
-                  </button>
+              {vertOpen && (
+                <div
+                  className="absolute left-0 mt-2 w-64 card p-2 z-50 animate-fade-in"
+                  onMouseLeave={() => setVertOpen(false)}
+                >
+                  {VERTICALS.map(({ key, label, sub, to, Icon }) => (
+                    <Link
+                      key={key}
+                      to={to}
+                      onClick={() => setVertOpen(false)}
+                      className={`flex items-start gap-3 p-3 rounded-xl transition ${
+                        vertical === key ? 'bg-brand/10' : 'hover:bg-brand/5'
+                      }`}
+                    >
+                      <div className="w-9 h-9 rounded-lg bg-brand/10 text-brand flex items-center justify-center flex-shrink-0">
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm font-semibold text-ink">{label}</div>
+                        <div className="text-[11px] text-ink-soft">{sub}</div>
+                      </div>
+                    </Link>
+                  ))}
                 </div>
               )}
             </div>
-          ) : (
-            <Link to="/login" className="btn-primary ml-2 hidden sm:inline-flex">Sign in</Link>
-          )}
+          </div>
 
-          <button onClick={() => setOpen(!open)} className="lg:hidden p-2">
-            {open ? <X /> : <Menu />}
-          </button>
+          {/* Center nav */}
+          <nav className="hidden lg:flex items-center gap-1">
+            {links.map((l) => (
+              <NavLink
+                key={l.to}
+                to={l.to}
+                end={l.end}
+                className={({ isActive }) =>
+                  `px-4 py-2 rounded-full text-sm font-medium transition ${
+                    isActive
+                      ? 'bg-brand text-white shadow-soft'
+                      : 'text-ink-soft hover:text-brand hover:bg-brand/5'
+                  }`
+                }
+              >
+                {l.label}
+              </NavLink>
+            ))}
+          </nav>
+
+          {/* Right actions */}
+          <div className="flex items-center gap-2">
+            {isShop && (
+              <>
+                <Link
+                  to={`${base}/favorites`}
+                  className="hidden sm:flex w-10 h-10 items-center justify-center rounded-full hover:bg-brand/10 text-ink-soft hover:text-brand transition"
+                  aria-label="Favorites"
+                >
+                  <Heart className="w-5 h-5" />
+                </Link>
+                <Link
+                  to={`${base}/cart`}
+                  className="relative flex w-10 h-10 items-center justify-center rounded-full hover:bg-brand/10 text-ink-soft hover:text-brand transition"
+                  aria-label="Cart"
+                >
+                  <ShoppingBag className="w-5 h-5" />
+                  {totalItems > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-brand text-white text-[10px] font-bold flex items-center justify-center">
+                      {totalItems}
+                    </span>
+                  )}
+                </Link>
+              </>
+            )}
+
+            {user ? (
+              <div className="relative">
+                <button
+                  onClick={() => setMenu(!menu)}
+                  className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full hover:bg-brand/10 transition"
+                >
+                  <div className="w-8 h-8 rounded-full bg-brand text-white flex items-center justify-center text-xs font-bold">
+                    {user.name?.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="hidden md:block text-xs font-medium text-ink max-w-[90px] truncate">
+                    {user.name}
+                  </span>
+                </button>
+                {menu && (
+                  <div
+                    className="absolute right-0 mt-2 w-56 card p-2 z-50 animate-fade-in"
+                    onMouseLeave={() => setMenu(false)}
+                  >
+                    <div className="px-3 py-2 border-b border-brand/10 mb-1">
+                      <div className="text-xs text-ink-soft">Signed in as</div>
+                      <div className="text-sm font-semibold text-ink truncate">{user.email}</div>
+                    </div>
+                    {isShop && (
+                      <>
+                        <MenuItem to={`${base}/profile`} Icon={User} label="Profile" onClick={() => setMenu(false)} />
+                        <MenuItem to={`${base}/orders`} Icon={Package} label="My Orders" onClick={() => setMenu(false)} />
+                      </>
+                    )}
+                    {user.role === 'admin' && (
+                      <MenuItem to="/admin" Icon={LayoutDashboard} label="Admin Panel" onClick={() => setMenu(false)} />
+                    )}
+                    <button
+                      onClick={() => { logout(); setMenu(false); navigate('/'); }}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-ink hover:bg-brand/10 transition"
+                    >
+                      <LogOut className="w-4 h-4" /> Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link to="/login" className="btn-primary text-xs py-2 px-4">
+                Sign In
+              </Link>
+            )}
+
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="lg:hidden w-10 h-10 flex items-center justify-center rounded-full hover:bg-brand/10 text-ink"
+              aria-label="Menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+          </div>
         </div>
-      </div>
+      </header>
 
-      {open && (
-        <div className="lg:hidden container-x pb-4 space-y-2">
-          <form onSubmit={submit} className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-maroon-500" />
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search..." className="input pl-11 bg-white" />
-          </form>
-          {links.map((l) => (
-            <NavLink key={l.to} to={l.to} onClick={() => setOpen(false)} end={l.to === '/'}
-              className={({ isActive }) => `block px-4 py-2 rounded-xl ${isActive ? 'bg-saffron-100' : 'hover:bg-saffron-50'}`}>
-              {l.label}
-            </NavLink>
-          ))}
-          {!user && <Link to="/login" onClick={() => setOpen(false)} className="btn-primary w-full">Sign in</Link>}
+      {/* Mobile drawer */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-[60] bg-surface flex flex-col animate-fade-in">
+          <div className="flex items-center justify-between p-4 border-b border-brand/15">
+            <span className="font-display text-xl font-bold text-brand-dark">Plumose</span>
+            <button onClick={() => setMobileOpen(false)} aria-label="Close">
+              <X className="w-6 h-6 text-ink" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-auto p-4 space-y-6">
+            <div>
+              <div className="label">Switch vertical</div>
+              <div className="grid grid-cols-1 gap-2">
+                {VERTICALS.map(({ key, label, sub, to, Icon }) => (
+                  <Link
+                    key={key}
+                    to={to}
+                    onClick={() => setMobileOpen(false)}
+                    className={`flex items-center gap-3 p-3 rounded-xl border transition ${
+                      vertical === key
+                        ? 'bg-brand/10 border-brand/30'
+                        : 'border-brand/10 hover:bg-brand/5'
+                    }`}
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-brand/10 text-brand flex items-center justify-center">
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold text-ink">{label}</div>
+                      <div className="text-xs text-ink-soft">{sub}</div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {links.length > 0 && (
+              <div>
+                <div className="label">Navigate</div>
+                <div className="space-y-1">
+                  {links.map((l) => (
+                    <NavLink
+                      key={l.to}
+                      to={l.to}
+                      end={l.end}
+                      onClick={() => setMobileOpen(false)}
+                      className={({ isActive }) =>
+                        `block px-4 py-2.5 rounded-xl text-sm font-medium transition ${
+                          isActive ? 'bg-brand text-white' : 'text-ink hover:bg-brand/5'
+                        }`
+                      }
+                    >
+                      {l.label}
+                    </NavLink>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
-    </header>
+    </>
+  );
+}
+
+function MenuItem({ to, Icon, label, onClick }) {
+  return (
+    <Link
+      to={to}
+      onClick={onClick}
+      className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-ink hover:bg-brand/10 transition"
+    >
+      <Icon className="w-4 h-4" /> {label}
+    </Link>
   );
 }

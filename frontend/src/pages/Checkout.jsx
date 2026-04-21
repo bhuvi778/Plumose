@@ -1,13 +1,17 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/client.js';
 import { useCart } from '../context/CartContext.jsx';
+import { useVertical } from '../context/VerticalContext.jsx';
 import toast from 'react-hot-toast';
-import { MapPin, Plus, Banknote, Smartphone, CreditCard } from 'lucide-react';
+import { Plus, Banknote, Smartphone, CreditCard } from 'lucide-react';
 
 export default function Checkout() {
   const navigate = useNavigate();
   const { cart, subtotal, refresh } = useCart();
+  const { config } = useVertical();
+  const base = config.base;
+
   const [addresses, setAddresses] = useState([]);
   const [selected, setSelected] = useState(null);
   const [showForm, setShowForm] = useState(false);
@@ -18,7 +22,7 @@ export default function Checkout() {
   const [loading, setLoading] = useState(false);
 
   const items = cart.items || [];
-  const shipping = subtotal > 999 ? 0 : 49;
+  const shipping = subtotal > 499 ? 0 : 49;
   const tax = Math.round(subtotal * 0.05);
   const total = subtotal + shipping + tax;
 
@@ -32,10 +36,7 @@ export default function Checkout() {
   };
 
   useEffect(loadAddrs, []);
-
-  useEffect(() => {
-    if (items.length === 0) navigate('/cart');
-  }, [items, navigate]);
+  useEffect(() => { if (items.length === 0) navigate(`${base}/cart`); }, [items, navigate, base]);
 
   const saveAddress = async (e) => {
     e.preventDefault();
@@ -59,8 +60,7 @@ export default function Checkout() {
         paymentMethod: payment,
       });
       await refresh();
-      toast.success('Order placed!');
-      navigate(`/order-success/${data._id}`);
+      navigate(`${base}/order-success/${data._id}`);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to place order');
     } finally {
@@ -70,45 +70,44 @@ export default function Checkout() {
 
   return (
     <div className="container-x py-10">
-      <h1 className="font-display text-4xl font-bold text-maroon-900 mb-8">Checkout</h1>
-      <div className="grid lg:grid-cols-[1fr_380px] gap-8">
+      <div className="mb-8 pb-6 border-b border-brand/15">
+        <div className="kicker mb-2">Checkout</div>
+        <h1 className="display text-4xl md:text-5xl">Confirm your order</h1>
+      </div>
+
+      <div className="grid lg:grid-cols-[1fr_340px] gap-8">
         <div className="space-y-8">
-          {/* Addresses */}
+          {/* Address */}
           <section>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-display text-xl font-bold flex items-center gap-2"><MapPin className="w-5 h-5" /> Shipping address</h2>
-              <button onClick={() => setShowForm(!showForm)} className="btn-outline text-sm">
-                <Plus className="w-4 h-4" /> Add new
+              <h3 className="text-lg font-semibold text-ink">Shipping address</h3>
+              <button onClick={() => setShowForm(!showForm)} className="btn-outline text-xs py-1.5">
+                <Plus className="w-3 h-3" /> New Address
               </button>
             </div>
             <div className="grid md:grid-cols-2 gap-3">
               {addresses.map((a) => (
-                <label key={a._id} className={`card p-4 cursor-pointer transition ${selected === a._id ? 'border-saffron-500 shadow-glow' : ''}`}>
+                <label key={a._id} className={`card p-4 cursor-pointer transition ${selected === a._id ? 'border-brand ring-2 ring-brand/30' : ''}`}>
                   <input type="radio" checked={selected === a._id} onChange={() => setSelected(a._id)} className="sr-only" />
-                  <div className="font-semibold text-maroon-900">{a.fullName} <span className="chip text-[10px] ml-1">{a.type}</span></div>
-                  <div className="text-sm text-maroon-700 mt-1">{a.line1}, {a.line2}</div>
-                  <div className="text-sm text-maroon-700">{a.city}, {a.state} - {a.pincode}</div>
-                  <div className="text-sm text-maroon-600 mt-1">📞 {a.phone}</div>
+                  <div className="text-sm font-semibold text-ink">{a.fullName}</div>
+                  <div className="text-xs text-ink-soft mt-1 leading-relaxed">
+                    {a.line1}, {a.city} — {a.pincode}
+                  </div>
+                  <div className="text-xs text-ink-soft mt-0.5">{a.phone}</div>
                 </label>
               ))}
             </div>
 
             {showForm && (
               <form onSubmit={saveAddress} className="card p-5 mt-4 grid md:grid-cols-2 gap-3">
-                <div><label className="label">Full name</label><input required className="input" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} /></div>
+                <div className="md:col-span-2"><label className="label">Full Name</label><input required className="input" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} /></div>
                 <div><label className="label">Phone</label><input required className="input" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
-                <div className="md:col-span-2"><label className="label">Address line 1</label><input required className="input" value={form.line1} onChange={(e) => setForm({ ...form, line1: e.target.value })} /></div>
-                <div className="md:col-span-2"><label className="label">Address line 2</label><input className="input" value={form.line2} onChange={(e) => setForm({ ...form, line2: e.target.value })} /></div>
+                <div><label className="label">Pincode</label><input required className="input" value={form.pincode} onChange={(e) => setForm({ ...form, pincode: e.target.value })} /></div>
+                <div className="md:col-span-2"><label className="label">Address Line 1</label><input required className="input" value={form.line1} onChange={(e) => setForm({ ...form, line1: e.target.value })} /></div>
                 <div><label className="label">City</label><input required className="input" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} /></div>
                 <div><label className="label">State</label><input required className="input" value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} /></div>
-                <div><label className="label">Pincode</label><input required className="input" value={form.pincode} onChange={(e) => setForm({ ...form, pincode: e.target.value })} /></div>
-                <div><label className="label">Type</label>
-                  <select className="input" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
-                    <option value="home">Home</option><option value="work">Work</option><option value="other">Other</option>
-                  </select>
-                </div>
-                <div className="md:col-span-2 flex gap-2">
-                  <button className="btn-primary">Save address</button>
+                <div className="md:col-span-2 flex gap-3">
+                  <button className="btn-primary flex-1">Save Address</button>
                   <button type="button" onClick={() => setShowForm(false)} className="btn-ghost">Cancel</button>
                 </div>
               </form>
@@ -117,17 +116,17 @@ export default function Checkout() {
 
           {/* Payment */}
           <section>
-            <h2 className="font-display text-xl font-bold mb-4">Payment method</h2>
+            <h3 className="text-lg font-semibold text-ink mb-4">Payment method</h3>
             <div className="grid md:grid-cols-3 gap-3">
               {[
-                { id: 'COD', label: 'Cash on Delivery', icon: Banknote },
-                { id: 'UPI', label: 'UPI / Wallet', icon: Smartphone },
-                { id: 'CARD', label: 'Credit / Debit Card', icon: CreditCard },
-              ].map(({ id, label, icon: Icon }) => (
-                <label key={id} className={`card p-4 cursor-pointer text-center transition ${payment === id ? 'border-saffron-500 shadow-glow' : ''}`}>
+                { id: 'COD', label: 'Cash on Delivery', Icon: Banknote },
+                { id: 'UPI', label: 'UPI / Wallet', Icon: Smartphone },
+                { id: 'CARD', label: 'Card', Icon: CreditCard },
+              ].map(({ id, label, Icon }) => (
+                <label key={id} className={`card p-4 cursor-pointer text-center transition ${payment === id ? 'border-brand ring-2 ring-brand/30' : ''}`}>
                   <input type="radio" checked={payment === id} onChange={() => setPayment(id)} className="sr-only" />
-                  <Icon className="w-6 h-6 mx-auto text-saffron-600" />
-                  <div className="mt-2 text-sm font-semibold text-maroon-900">{label}</div>
+                  <Icon className="w-6 h-6 mx-auto text-brand mb-2" />
+                  <div className="text-sm font-semibold text-ink">{label}</div>
                 </label>
               ))}
             </div>
@@ -135,34 +134,42 @@ export default function Checkout() {
 
           {/* Items */}
           <section>
-            <h2 className="font-display text-xl font-bold mb-4">Order items</h2>
-            <div className="card divide-y divide-saffron-100">
-              {items.map((i) => i.product && (
-                <div key={i.product._id} className="p-3 flex items-center gap-3">
-                  <img src={i.product.images?.[0]} alt="" className="w-14 h-14 rounded-lg object-cover" />
-                  <div className="flex-1">
-                    <div className="text-sm font-semibold text-maroon-900">{i.product.name}</div>
-                    <div className="text-xs text-maroon-500">Qty: {i.quantity}</div>
+            <h3 className="text-lg font-semibold text-ink mb-4">Items in your order</h3>
+            <div className="card divide-y divide-brand/10">
+              {items.map((i) =>
+                i.product && (
+                  <div key={i.product._id} className="flex items-center gap-4 p-4">
+                    <div className="w-14 h-14 rounded-lg bg-brand-soft overflow-hidden shrink-0">
+                      {i.product.images?.[0] && <img src={i.product.images[0]} alt="" className="w-full h-full object-cover" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-semibold text-ink line-clamp-1">{i.product.name}</div>
+                      <div className="text-xs text-ink-soft">Qty: {i.quantity}</div>
+                    </div>
+                    <div className="font-semibold text-ink">₹{i.product.price * i.quantity}</div>
                   </div>
-                  <div className="font-semibold">₹{i.product.price * i.quantity}</div>
-                </div>
-              ))}
+                )
+              )}
             </div>
           </section>
         </div>
 
-        <aside className="card p-6 h-fit sticky top-28">
-          <h3 className="font-display text-xl font-bold">Order summary</h3>
-          <div className="mt-4 space-y-2 text-sm">
-            <div className="flex justify-between"><span>Subtotal</span><span>₹{subtotal}</span></div>
-            <div className="flex justify-between"><span>Shipping</span><span>{shipping === 0 ? 'Free' : `₹${shipping}`}</span></div>
-            <div className="flex justify-between"><span>Tax</span><span>₹{tax}</span></div>
-            <div className="border-t border-saffron-200 pt-3 mt-3 flex justify-between font-bold text-lg text-maroon-900">
-              <span>Total</span><span>₹{total}</span>
+        <aside className="card p-6 h-fit lg:sticky lg:top-24">
+          <div className="label">Order summary</div>
+          <div className="space-y-3 text-sm">
+            <div className="flex justify-between"><span className="text-ink-soft">Subtotal</span><span>₹{subtotal}</span></div>
+            <div className="flex justify-between"><span className="text-ink-soft">Shipping</span><span>{shipping === 0 ? 'Free' : `₹${shipping}`}</span></div>
+            <div className="flex justify-between"><span className="text-ink-soft">Tax</span><span>₹{tax}</span></div>
+            <div className="border-t border-brand/15 pt-3 flex justify-between font-bold text-lg">
+              <span>Total</span><span className="text-brand-dark">₹{total}</span>
             </div>
           </div>
-          <button onClick={placeOrder} disabled={loading || !selected} className="btn-primary w-full mt-6">
-            {loading ? 'Placing order...' : `Place order • ₹${total}`}
+          <button
+            onClick={placeOrder}
+            disabled={loading || !selected}
+            className="btn-primary w-full justify-center mt-5"
+          >
+            {loading ? 'Placing…' : `Place Order · ₹${total}`}
           </button>
         </aside>
       </div>
