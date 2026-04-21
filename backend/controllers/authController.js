@@ -41,6 +41,35 @@ export const login = asyncHandler(async (req, res) => {
   });
 });
 
+// One-time admin setup — works when no admin exists, or when ADMIN_SETUP_KEY matches
+export const setupAdmin = asyncHandler(async (req, res) => {
+  const { email, password, setupKey } = req.body;
+  if (!email || !password) {
+    res.status(400);
+    throw new Error('email and password are required');
+  }
+
+  const existingAdmin = await User.findOne({ role: 'admin' });
+
+  if (existingAdmin) {
+    // Require setup key to override an existing admin
+    const requiredKey = process.env.ADMIN_SETUP_KEY;
+    if (!requiredKey || setupKey !== requiredKey) {
+      res.status(403);
+      throw new Error('An admin already exists. Set ADMIN_SETUP_KEY env var and pass it as setupKey to override.');
+    }
+    existingAdmin.email = email;
+    existingAdmin.password = password;
+    existingAdmin.name = 'Plumose Admin';
+    await existingAdmin.save();
+    return res.json({ message: 'Admin credentials updated', email });
+  }
+
+  // No admin exists — create one
+  const admin = await User.create({ name: 'Plumose Admin', email, password, role: 'admin' });
+  res.status(201).json({ message: 'Admin created', email: admin.email });
+});
+
 export const me = asyncHandler(async (req, res) => {
   res.json(req.user);
 });
