@@ -86,7 +86,12 @@ export default function Categories() {
               </div>
               <div className="font-bold text-ink mt-3 text-sm">{c.name}</div>
               <div className="text-[10px] text-ink/40 mt-0.5 font-mono">{c.slug}</div>
-              <div className="mt-2 text-[10px] uppercase tracking-wider font-bold text-ink/60">{c.productCount || 0} products</div>
+              <div className="mt-2 flex items-center gap-2">
+                <span className={`text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded ${c.vertical === 'herbal' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}`}>
+                  {c.vertical || 'devapi'}
+                </span>
+                <span className="text-[10px] uppercase tracking-wider font-bold text-ink/60">{c.productCount || 0} items</span>
+              </div>
               {c.description && <div className="text-xs text-ink/50 mt-2 line-clamp-2 font-mono">{c.description}</div>}
             </div>
           ))}
@@ -102,6 +107,13 @@ export default function Categories() {
             </div>
             <form onSubmit={save} className="p-5 space-y-3">
               <div><label className="text-[10px] font-mono uppercase tracking-widest text-ink/40 block mb-1">Name</label><input required className="input-brutal" value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value, slug: slugify(e.target.value) })} /></div>
+              <div>
+                <label className="text-[10px] font-mono uppercase tracking-widest text-ink/40 block mb-1">Vertical</label>
+                <select className="input-brutal" value={editing.vertical || 'devapi'} onChange={(e) => setEditing({ ...editing, vertical: e.target.value })}>
+                  <option value="devapi">Devapi (Puja)</option>
+                  <option value="herbal">Herbal Products</option>
+                </select>
+              </div>
               <div><label className="text-[10px] font-mono uppercase tracking-widest text-ink/40 block mb-1">Slug</label><input className="input-brutal" value={editing.slug} onChange={(e) => setEditing({ ...editing, slug: e.target.value })} /></div>
               <div><label className="text-[10px] font-mono uppercase tracking-widest text-ink/40 block mb-1">Icon (emoji)</label><input className="input-brutal" value={editing.icon} onChange={(e) => setEditing({ ...editing, icon: e.target.value })} /></div>
               <div><label className="text-[10px] font-mono uppercase tracking-widest text-ink/40 block mb-1">Image URL</label><input className="input-brutal" value={editing.image} onChange={(e) => setEditing({ ...editing, image: e.target.value })} /></div>

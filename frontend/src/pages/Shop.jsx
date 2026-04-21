@@ -3,154 +3,157 @@ import { useParams, useSearchParams, Link } from 'react-router-dom';
 import api from '../api/client.js';
 import ProductCard from '../components/ProductCard.jsx';
 import Loader from '../components/Loader.jsx';
-import { SlidersHorizontal, X } from 'lucide-react';
+import { SlidersHorizontal, X, ChevronRight } from 'lucide-react';
+import { useVertical } from '../context/VerticalContext.jsx';
 
 export default function Shop() {
   const { categorySlug } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const search = searchParams.get('search') || '';
+  const { vertical, config } = useVertical();
+  const base = config.base;
+
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState('newest');
-  const [priceRange, setPriceRange] = useState([0, 5000]);
+  const [priceRange, setPriceRange] = useState([0, 10000]);
   const [category, setCategory] = useState(categorySlug || '');
   const [showFilter, setShowFilter] = useState(false);
 
   useEffect(() => {
-    api.get('/categories').then((r) => setCategories(r.data));
-  }, []);
+    api.get(`/categories?vertical=${vertical}`).then((r) => setCategories(r.data));
+  }, [vertical]);
 
   useEffect(() => { setCategory(categorySlug || ''); }, [categorySlug]);
 
   useEffect(() => {
     setLoading(true);
     const params = new URLSearchParams();
+    params.set('vertical', vertical);
     if (category) params.set('category', category);
     if (search) params.set('search', search);
     if (priceRange[0]) params.set('min', priceRange[0]);
-    if (priceRange[1] < 5000) params.set('max', priceRange[1]);
+    if (priceRange[1] < 10000) params.set('max', priceRange[1]);
     if (sort !== 'newest') params.set('sort', sort);
     params.set('limit', 48);
     api.get(`/products?${params.toString()}`)
       .then((r) => setProducts(r.data.products))
       .finally(() => setLoading(false));
-  }, [category, search, priceRange, sort]);
+  }, [vertical, category, search, priceRange, sort]);
 
   const activeCat = categories.find((c) => c.slug === category);
 
   return (
-    <div className="container-x py-20">
-      {/* Page header */}
-      <div className="mb-10 border-b border-ink/20 pb-8">
-        <nav className="text-[10px] uppercase tracking-[0.2em] text-ink/40 font-mono mb-4">
-          <Link to="/" className="hover:text-ink link-strike">Home</Link>
-          {' / '}
-          <Link to="/shop" className="hover:text-ink link-strike">Shop</Link>
-          {activeCat && <> / <span className="text-ink">{activeCat.name}</span></>}
-          {search && <> / <span className="text-ink">&ldquo;{search}&rdquo;</span></>}
-        </nav>
-        <h1
-          className="text-5xl md:text-7xl text-ink leading-[0.85] tracking-tighter"
-          style={{ fontFamily: 'Anton, Impact, sans-serif', textTransform: 'uppercase' }}
-        >
+    <div className="container-x py-10">
+      <nav className="text-xs text-ink-soft mb-5 flex items-center gap-1.5">
+        <Link to={base} className="hover:text-brand">Home</Link>
+        <ChevronRight className="w-3 h-3" />
+        <Link to={`${base}/shop`} className="hover:text-brand">Shop</Link>
+        {activeCat && (
+          <>
+            <ChevronRight className="w-3 h-3" />
+            <span className="text-ink">{activeCat.name}</span>
+          </>
+        )}
+      </nav>
+
+      <div className="mb-8 pb-6 border-b border-brand/15">
+        <h1 className="display text-4xl md:text-5xl">
           {search ? `"${search}"` : activeCat ? activeCat.name : 'All Products'}
         </h1>
         {activeCat?.description && (
-          <p className="mt-3 text-sm text-ink/50 max-w-md font-body leading-relaxed">{activeCat.description}</p>
+          <p className="mt-2 text-sm text-ink-soft max-w-xl">{activeCat.description}</p>
         )}
       </div>
 
-      <div className="grid lg:grid-cols-[220px_1fr] gap-10">
-        {/* â”€â”€ Sidebar filter â”€â”€ */}
-        <aside className={`${showFilter ? 'fixed inset-0 z-50 bg-concrete overflow-auto p-8' : 'hidden'} lg:block lg:static lg:p-0`}>
+      <div className="grid lg:grid-cols-[260px_1fr] gap-8">
+        <aside className={`${showFilter ? 'fixed inset-0 z-50 bg-surface overflow-auto p-6' : 'hidden'} lg:block lg:static lg:p-0`}>
           <div className="flex items-center justify-between mb-6 lg:hidden">
-            <h3 className="text-2xl text-ink" style={{ fontFamily: 'Anton, Impact, sans-serif', textTransform: 'uppercase' }}>Filters</h3>
-            <button onClick={() => setShowFilter(false)} className="text-ink"><X className="w-5 h-5" /></button>
+            <h3 className="display text-2xl">Filters</h3>
+            <button onClick={() => setShowFilter(false)}><X className="w-5 h-5" /></button>
           </div>
 
-          <div className="border border-ink p-5 space-y-8 lg:sticky lg:top-24">
-            {/* Categories */}
+          <div className="card p-5 space-y-6 lg:sticky lg:top-24">
             <div>
-              <div className="text-[10px] uppercase tracking-[0.25em] text-ink/40 font-mono mb-3">Category</div>
-              <div className="space-y-1 max-h-64 overflow-auto">
+              <div className="label">Category</div>
+              <div className="space-y-1 max-h-72 overflow-auto pr-1">
                 <button
                   onClick={() => setCategory('')}
-                  className={`block w-full text-left px-2 py-1.5 text-xs uppercase tracking-wide font-medium transition-colors ${
-                    !category ? 'bg-ink text-concrete' : 'text-ink hover:bg-ink/5'
+                  className={`block w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition ${
+                    !category ? 'bg-brand text-white' : 'text-ink hover:bg-brand/5'
                   }`}
                 >
-                  All
+                  All products
                 </button>
                 {categories.map((c) => (
                   <button
                     key={c._id}
                     onClick={() => setCategory(c.slug)}
-                    className={`flex w-full justify-between items-center px-2 py-1.5 text-xs uppercase tracking-wide transition-colors ${
-                      category === c.slug ? 'bg-ink text-concrete' : 'text-ink hover:bg-ink/5'
+                    className={`flex w-full justify-between items-center px-3 py-2 rounded-lg text-sm transition ${
+                      category === c.slug ? 'bg-brand text-white' : 'text-ink hover:bg-brand/5'
                     }`}
                   >
-                    <span>{c.name}</span>
-                    <span className="text-[10px] font-mono opacity-50">{c.productCount}</span>
+                    <span>{c.icon} {c.name}</span>
+                    <span className="text-xs opacity-60">{c.productCount}</span>
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Price */}
-            <div>
-              <div className="text-[10px] uppercase tracking-[0.25em] text-ink/40 font-mono mb-3">Price</div>
+            <div className="border-t border-brand/10 pt-4">
+              <div className="label">Price range</div>
               <div className="flex items-center gap-2">
                 <input
                   type="number"
                   value={priceRange[0]}
-                  onChange={(e) => setPriceRange([+e.target.value, priceRange[1]])}
-                  className="input-brutal text-xs"
+                  onChange={(e) => setPriceRange([+e.target.value || 0, priceRange[1]])}
+                  className="input text-xs"
                   placeholder="Min"
                 />
-                <span className="text-ink/30">â€”</span>
+                <span className="text-ink-mute">—</span>
                 <input
                   type="number"
                   value={priceRange[1]}
-                  onChange={(e) => setPriceRange([priceRange[0], +e.target.value])}
-                  className="input-brutal text-xs"
+                  onChange={(e) => setPriceRange([priceRange[0], +e.target.value || 10000])}
+                  className="input text-xs"
                   placeholder="Max"
                 />
               </div>
               <input
-                type="range" min={0} max={5000} step={100}
+                type="range" min={0} max={10000} step={100}
                 value={priceRange[1]}
                 onChange={(e) => setPriceRange([priceRange[0], +e.target.value])}
-                className="w-full mt-3 accent-ink"
+                className="w-full mt-3 accent-brand"
               />
+              <div className="flex justify-between text-[11px] text-ink-mute mt-1">
+                <span>₹0</span><span>₹10,000</span>
+              </div>
             </div>
 
             <button
-              onClick={() => { setCategory(''); setPriceRange([0, 5000]); setSort('newest'); setSearchParams({}); }}
-              className="btn-brutal-outline w-full justify-center text-[10px]"
+              onClick={() => { setCategory(''); setPriceRange([0, 10000]); setSort('newest'); setSearchParams({}); }}
+              className="btn-ghost w-full text-xs"
             >
-              Reset Filters
+              Reset filters
             </button>
           </div>
         </aside>
 
-        {/* â”€â”€ Product grid â”€â”€ */}
         <div>
-          <div className="flex items-center justify-between mb-6">
-            <button onClick={() => setShowFilter(true)} className="btn-brutal-outline lg:hidden text-[10px] py-2">
+          <div className="flex items-center justify-between mb-6 gap-3">
+            <button onClick={() => setShowFilter(true)} className="btn-outline lg:hidden text-xs py-2">
               <SlidersHorizontal className="w-3.5 h-3.5" /> Filters
             </button>
-            <span className="text-[10px] uppercase tracking-[0.2em] text-ink/40 font-mono">
-              {products.length} items
-            </span>
+            <span className="text-sm text-ink-soft">{products.length} products</span>
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value)}
-              className="input-brutal text-xs max-w-[180px]"
+              className="input text-sm max-w-[200px]"
             >
-              <option value="newest">Newest</option>
-              <option value="price-asc">Price: Low â†’ High</option>
-              <option value="price-desc">Price: High â†’ Low</option>
+              <option value="newest">Newest first</option>
+              <option value="price-asc">Price: Low → High</option>
+              <option value="price-desc">Price: High → Low</option>
               <option value="rating">Top Rated</option>
               <option value="popular">Most Popular</option>
             </select>
@@ -159,20 +162,10 @@ export default function Shop() {
           {loading ? (
             <Loader />
           ) : products.length === 0 ? (
-            <div className="border border-ink/20 p-16 text-center">
-              <div
-                className="text-6xl text-ink/10 mb-4"
-                style={{ fontFamily: 'Anton, Impact, sans-serif' }}
-              >
-                0
-              </div>
-              <h3
-                className="text-2xl text-ink mb-2"
-                style={{ fontFamily: 'Anton, Impact, sans-serif', textTransform: 'uppercase' }}
-              >
-                No Products Found
-              </h3>
-              <p className="text-xs text-ink/40 font-mono uppercase tracking-wide">Adjust your filters or search.</p>
+            <div className="card p-16 text-center">
+              <div className="text-6xl mb-4">🔍</div>
+              <h3 className="display text-2xl mb-2">No products found</h3>
+              <p className="text-sm text-ink-soft">Adjust your filters or try a different search.</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">

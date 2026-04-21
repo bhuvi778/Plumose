@@ -6,25 +6,28 @@ import App from './App.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 import { CartProvider } from './context/CartContext.jsx';
 import { FavoriteProvider } from './context/FavoriteContext.jsx';
+import { VerticalProvider } from './context/VerticalContext.jsx';
 import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
-      <AuthProvider>
-        <CartProvider>
-          <FavoriteProvider>
-            <App />
-            <Toaster
-              position="top-center"
-              toastOptions={{
-                style: { background: '#4a0f0f', color: '#fffaf1', borderRadius: '12px' },
-                success: { iconTheme: { primary: '#ffa329', secondary: '#4a0f0f' } },
-              }}
-            />
-          </FavoriteProvider>
-        </CartProvider>
-      </AuthProvider>
+      <VerticalProvider>
+        <AuthProvider>
+          <CartProvider>
+            <FavoriteProvider>
+              <App />
+              <Toaster
+                position="top-center"
+                toastOptions={{
+                  style: { background: 'rgb(var(--ink))', color: 'rgb(var(--surface))', borderRadius: '12px', fontSize: '14px' },
+                  success: { iconTheme: { primary: 'rgb(var(--brand))', secondary: 'rgb(var(--surface))' } },
+                }}
+              />
+            </FavoriteProvider>
+          </CartProvider>
+        </AuthProvider>
+      </VerticalProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

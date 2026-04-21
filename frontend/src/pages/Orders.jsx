@@ -2,18 +2,22 @@
 import { Link } from 'react-router-dom';
 import api from '../api/client.js';
 import Loader from '../components/Loader.jsx';
+import { Package, ArrowRight } from 'lucide-react';
+import { useVertical } from '../context/VerticalContext.jsx';
 
 const STATUS_STYLE = {
-  pending:   'bg-concrete border border-ink/30 text-ink/60',
-  confirmed: 'bg-ink text-concrete',
-  shipped:   'bg-ink text-concrete',
-  delivered: 'bg-ink text-concrete',
-  cancelled: 'bg-accent text-white',
+  pending: 'bg-brand/15 text-brand-dark',
+  confirmed: 'bg-brand text-white',
+  shipped: 'bg-accent text-white',
+  delivered: 'bg-green-600 text-white',
+  cancelled: 'bg-red-500 text-white',
 };
 
 export default function Orders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { config } = useVertical();
+  const base = config.base;
 
   useEffect(() => {
     api.get('/orders/my').then((r) => setOrders(r.data)).finally(() => setLoading(false));
@@ -22,54 +26,52 @@ export default function Orders() {
   if (loading) return <Loader />;
 
   return (
-    <div className="container-x py-20">
-      <div className="mb-10 border-b border-ink/20 pb-8">
-        <div className="text-[10px] uppercase tracking-[0.3em] text-ink/40 font-mono mb-2">Account</div>
-        <h1 className="text-5xl text-ink leading-[0.85] tracking-tighter" style={{ fontFamily: 'Anton, Impact, sans-serif', textTransform: 'uppercase' }}>
-          My Orders
-        </h1>
+    <div className="container-x py-10">
+      <div className="mb-8 pb-6 border-b border-brand/15">
+        <div className="kicker mb-2">Account</div>
+        <h1 className="display text-4xl md:text-5xl">My Orders</h1>
       </div>
 
       {orders.length === 0 ? (
-        <div className="border border-ink/20 p-16 text-center">
-          <div className="text-5xl text-ink/10 font-mono mb-4">0</div>
-          <h3 className="text-2xl text-ink mb-4" style={{ fontFamily: 'Anton, Impact, sans-serif', textTransform: 'uppercase' }}>No Orders Yet</h3>
-          <Link to="/shop" className="btn-brutal inline-flex">Start Shopping</Link>
+        <div className="card p-16 text-center">
+          <Package className="w-14 h-14 mx-auto text-brand/30 mb-4" />
+          <h3 className="display text-2xl mb-3">No orders yet</h3>
+          <p className="text-sm text-ink-soft mb-6">Aapne abhi tak koi order nahi kiya.</p>
+          <Link to={`${base}/shop`} className="btn-primary">Start Shopping</Link>
         </div>
       ) : (
-        <div className="space-y-px border border-ink/10">
+        <div className="space-y-3">
           {orders.map((o) => (
             <Link
-              to={`/orders/${o._id}`}
+              to={`${base}/orders/${o._id}`}
               key={o._id}
-              className="flex flex-wrap items-center justify-between gap-4 p-5 border-b border-ink/10 last:border-0 hover:bg-ink/3 transition-colors"
+              className="card-hover p-5 flex flex-wrap items-center justify-between gap-4"
             >
-              <div>
-                <div className="text-[10px] font-mono uppercase tracking-wide text-ink/40">Order ID</div>
-                <div className="text-xs font-mono font-bold text-ink mt-0.5">#{o._id.slice(-8).toUpperCase()}</div>
+              <div className="flex items-center gap-3 flex-1 min-w-[180px]">
+                <div className="w-11 h-11 rounded-xl bg-brand/10 text-brand flex items-center justify-center">
+                  <Package className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-xs text-ink-soft">Order</div>
+                  <div className="font-semibold text-ink">#{o._id.slice(-8).toUpperCase()}</div>
+                </div>
               </div>
               <div>
-                <div className="text-[10px] font-mono uppercase tracking-wide text-ink/40">Date</div>
-                <div className="text-xs font-mono text-ink mt-0.5">{new Date(o.createdAt).toLocaleDateString()}</div>
+                <div className="text-xs text-ink-soft">Date</div>
+                <div className="text-sm text-ink">{new Date(o.createdAt).toLocaleDateString()}</div>
               </div>
               <div>
-                <div className="text-[10px] font-mono uppercase tracking-wide text-ink/40">Items</div>
-                <div className="text-xs font-mono text-ink mt-0.5">{o.items.length}</div>
+                <div className="text-xs text-ink-soft">Items</div>
+                <div className="text-sm text-ink">{o.items.length}</div>
               </div>
               <div>
-                <div className="text-[10px] font-mono uppercase tracking-wide text-ink/40">Total</div>
-                <div className="text-sm font-mono font-bold text-ink mt-0.5">${o.total}</div>
+                <div className="text-xs text-ink-soft">Total</div>
+                <div className="font-bold text-brand-dark">₹{o.total}</div>
               </div>
-              <span className={`px-2 py-1 text-[10px] font-bold font-mono uppercase tracking-wide ${STATUS_STYLE[o.status] || 'bg-ink/10 text-ink'}`}>
+              <span className={`px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide ${STATUS_STYLE[o.status] || 'bg-brand/10 text-ink'}`}>
                 {o.status}
               </span>
-              <div className="flex gap-1.5 overflow-hidden">
-                {o.items.slice(0, 5).map((i, idx) => (
-                  <div key={idx} className="w-10 h-10 overflow-hidden bg-ink/5 shrink-0">
-                    {i.image && <img src={i.image} alt="" className="w-full h-full object-cover" />}
-                  </div>
-                ))}
-              </div>
+              <ArrowRight className="w-4 h-4 text-ink-soft" />
             </Link>
           ))}
         </div>

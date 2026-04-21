@@ -3,13 +3,26 @@ import Product from '../models/Product.js';
 import Category from '../models/Category.js';
 
 export const getProducts = asyncHandler(async (req, res) => {
-  const { category, search, min, max, sort, featured, trending, bestseller, page = 1, limit = 24 } = req.query;
+  const {
+    vertical, category, search, min, max, sort,
+    featured, trending, bestseller, page = 1, limit = 24,
+  } = req.query;
   const filter = {};
+
+  // Filter by vertical — via Category join
+  let verticalCategoryIds = null;
+  if (vertical && ['devapi', 'herbal'].includes(vertical)) {
+    const catsInVertical = await Category.find({ vertical }, '_id');
+    verticalCategoryIds = catsInVertical.map((c) => c._id);
+  }
 
   if (category) {
     const cat = await Category.findOne({ slug: category });
     if (cat) filter.category = cat._id;
+  } else if (verticalCategoryIds) {
+    filter.category = { $in: verticalCategoryIds };
   }
+
   if (search) filter.name = { $regex: search, $options: 'i' };
   if (min || max) {
     filter.price = {};
@@ -28,7 +41,7 @@ export const getProducts = asyncHandler(async (req, res) => {
 
   const skip = (Number(page) - 1) * Number(limit);
   const [products, total] = await Promise.all([
-    Product.find(filter).populate('category', 'name slug').sort(sortBy).skip(skip).limit(Number(limit)),
+    Product.find(filter).populate('category', 'name slug icon vertical').sort(sortBy).skip(skip).limit(Number(limit)),
     Product.countDocuments(filter),
   ]);
 
@@ -36,12 +49,14 @@ export const getProducts = asyncHandler(async (req, res) => {
 });
 
 export const getProductBySlug = asyncHandler(async (req, res) => {
-  const product = await Product.findOne({ slug: req.params.slug }).populate('category', 'name slug');
+  const product = await Product.findOne({ slug: req.params.slug }).populate('category', 'name slug icon vertical');
   if (!product) {
     res.status(404);
     throw new Error('Product not found');
   }
-  const related = await Product.find({ category: product.category, _id: { $ne: product._id } }).limit(8);
+  const related = await Product.find({ category: product.category, _id: { $ne: product._id } })
+    .populate('category', 'name slug icon vertical')
+    .limit(8);
   res.json({ product, related });
 });
 
