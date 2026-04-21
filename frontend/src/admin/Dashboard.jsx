@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/client.js';
-import { Users, Package, Tag, ShoppingCart, IndianRupee, TrendingUp, ArrowRight, AlertCircle } from 'lucide-react';
+import { Users, Package, Tag, ShoppingCart, IndianRupee, TrendingUp, ArrowRight, AlertCircle, Leaf } from 'lucide-react';
 import Loader from '../components/Loader.jsx';
+import toast from 'react-hot-toast';
 
 const STATUS_BADGE = {
   pending: 'bg-concrete text-ink border border-ink/20',
@@ -15,6 +16,22 @@ const STATUS_BADGE = {
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [error, setError] = useState(null);
+  const [seeding, setSeeding] = useState(false);
+
+  const handleSeedHerbal = async () => {
+    if (!confirm('This will replace all existing Herbal categories + products with fresh seed data. Continue?')) return;
+    setSeeding(true);
+    try {
+      const r = await api.post('/admin/seed-herbal');
+      toast.success(r.data.message);
+      // Refresh stats
+      api.get('/admin/stats').then((r2) => setStats(r2.data));
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Seeding failed');
+    } finally {
+      setSeeding(false);
+    }
+  };
 
   useEffect(() => {
     api.get('/admin/stats')
@@ -79,6 +96,25 @@ export default function Dashboard() {
               <ArrowRight className="w-3 h-3 ml-auto" />
             </Link>
           ))}
+        </div>
+      </div>
+
+      {/* Data Tools */}
+      <div>
+        <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-ink/40 mb-3">Data Tools</div>
+        <div className="border border-ink p-5 flex flex-wrap items-center gap-4">
+          <div className="flex-1 min-w-[200px]">
+            <div className="font-bold text-sm text-ink flex items-center gap-2"><Leaf className="w-4 h-4 text-green-600" /> Seed Herbal Products</div>
+            <p className="text-xs text-ink/50 mt-1 font-mono">Populate the database with 8 herbal categories and ~35 products. Safe to re-run — replaces only herbal data.</p>
+          </div>
+          <button
+            onClick={handleSeedHerbal}
+            disabled={seeding}
+            className="flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white text-sm font-bold transition"
+          >
+            <Leaf className="w-4 h-4" />
+            {seeding ? 'Seeding…' : 'Seed Herbal Data'}
+          </button>
         </div>
       </div>
 
